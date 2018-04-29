@@ -26,28 +26,30 @@
 
 #include <state_saver.hpp>
 
-int basic_int = -1;
+#include <string>
+
+int global_int{-1};
 TEST_CASE("basic type") {
   SECTION("function") {
     const auto SomeMethod = [](int& a) {
       STATE_SAVER(a);
       a = 100;
       REQUIRE(a == 100);
-      REQUIRE(::basic_int == 100);
-
+      REQUIRE(::global_int == 100);
     };
-    SomeMethod(basic_int);
-    REQUIRE(basic_int == -1);
+    SomeMethod(::global_int);
+    REQUIRE(::global_int == -1);
   }
 
   SECTION("lambda") {
     const auto SomeMethod = [&]() {
-      STATE_SAVER(basic_int);
-      basic_int = 100;
-      REQUIRE(::basic_int == 100);
+      STATE_SAVER(global_int);
+      global_int = 100;
+      REQUIRE(global_int == 100);
+      REQUIRE(::global_int == 100);
     };
     SomeMethod();
-    REQUIRE(basic_int == -1);
+    REQUIRE(::global_int == -1);
   }
 }
 
@@ -70,9 +72,8 @@ TEST_CASE("struct") {
       a.i = 100;
       REQUIRE(a.i == 100);
       REQUIRE(::global_a.i == 100);
-
     };
-    SomeMethod(global_a);
+    SomeMethod(::global_a);
     REQUIRE(::global_a.i == -1);
   }
 
@@ -80,9 +81,35 @@ TEST_CASE("struct") {
     const auto SomeMethod = [&]() {
       STATE_SAVER(global_a);
       global_a.i = 100;
+      REQUIRE(global_a.i == 100);
       REQUIRE(::global_a.i == 100);
     };
     SomeMethod();
     REQUIRE(::global_a.i == -1);
+  }
+}
+
+std::string global_str{"test"};
+TEST_CASE("std") {
+  SECTION("function") {
+    const auto SomeMethod = [](std::string& s) {
+      STATE_SAVER(s);
+      s[0] = 'o';
+      REQUIRE(s == "oest");
+      REQUIRE(::global_str == "oest");
+    };
+    SomeMethod(::global_str);
+    REQUIRE(::global_str == "test");
+  }
+
+  SECTION("lambda") {
+    const auto SomeMethod = [&]() {
+      STATE_SAVER(global_str);
+      global_str[0] = 'o';
+      REQUIRE(global_str == "oest");
+      REQUIRE(::global_str == "oest");
+    };
+    SomeMethod();
+    REQUIRE(::global_str == "test");
   }
 }
