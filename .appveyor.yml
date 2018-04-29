@@ -1,0 +1,33 @@
+version: "{branch} #{build}"
+
+image: Visual Studio 2017
+
+platform:
+  - x64
+  - x32
+
+configuration:
+  - Release
+  - Debug
+
+shallow_clone: true
+
+matrix:
+  fast_finish: true
+
+environment:
+  matrix:
+    - TOOLCHAIN: msvc14
+    - TOOLCHAIN: msvc15
+
+before_build:
+  - if exist build RMDIR /S /Q build
+  - if not exist build mkdir build
+  - cd build
+  - cmake.exe .. %CMAKE_CONFIGURE_FLAGS%
+
+build_script:
+  - cmake --build . --config %CONFIGURATION%
+
+test_script:
+  - ctest -V --output-on-failure -C %CONFIGURATION%
