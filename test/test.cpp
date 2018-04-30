@@ -26,90 +26,246 @@
 
 #include <state_saver.hpp>
 
-#include <string>
+#include <stdexcept>
 
-int global_int{-1};
-TEST_CASE("basic type") {
-  SECTION("function") {
-    const auto SomeMethod = [](int& a) {
+#include "test_case.hpp"
+
+using namespace state_saver;
+
+A na;
+static_assert(noexcept(StateSaver<A>{na}), "");
+static_assert(noexcept(StateSaver<A>{na}.~StateSaver()), "");
+
+constexpr const int value = -1;
+constexpr const int other_value = 1;
+
+TEST_CASE("called on scope leave function") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
       STATE_SAVER(a);
-      a = 100;
-      REQUIRE(a == 100);
-      REQUIRE(::global_int == 100);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
     };
-    SomeMethod(::global_int);
-    REQUIRE(::global_int == -1);
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
   }
 
-  SECTION("lambda") {
-    const auto SomeMethod = [&]() {
-      STATE_SAVER(global_int);
-      global_int = 100;
-      REQUIRE(global_int == 100);
-      REQUIRE(::global_int == 100);
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
     };
-    SomeMethod();
-    REQUIRE(::global_int == -1);
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
   }
 }
 
-struct A {
-  int i = 0;
-  A(int i) : i{i} {}
-  A() = default;
-  A(const A&) = default;
-  A(A&&) = default;
-  A& operator=(const A&) = default;
-  A& operator=(A&&) = default;
-  ~A() = default;
-};
-
-A global_a{-1};
-TEST_CASE("struct") {
-  SECTION("function") {
-    const auto SomeMethod = [](A& a) {
+TEST_CASE("called on scope leave lambda") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
       STATE_SAVER(a);
-      a.i = 100;
-      REQUIRE(a.i == 100);
-      REQUIRE(::global_a.i == 100);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
     };
-    SomeMethod(::global_a);
-    REQUIRE(::global_a.i == -1);
+
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
   }
 
-  SECTION("lambda") {
-    const auto SomeMethod = [&]() {
-      STATE_SAVER(global_a);
-      global_a.i = 100;
-      REQUIRE(global_a.i == 100);
-      REQUIRE(::global_a.i == 100);
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
     };
-    SomeMethod();
-    REQUIRE(::global_a.i == -1);
+
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
   }
 }
 
-std::string global_str{"test"};
-TEST_CASE("std") {
-  SECTION("function") {
-    const auto SomeMethod = [](std::string& s) {
-      STATE_SAVER(s);
-      s[0] = 'o';
-      REQUIRE(s == "oest");
-      REQUIRE(::global_str == "oest");
+TEST_CASE("called on exception function") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      STATE_SAVER(a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
     };
-    SomeMethod(::global_str);
-    REQUIRE(::global_str == "test");
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
   }
 
-  SECTION("lambda") {
-    const auto SomeMethod = [&]() {
-      STATE_SAVER(global_str);
-      global_str[0] = 'o';
-      REQUIRE(global_str == "oest");
-      REQUIRE(::global_str == "oest");
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
     };
-    SomeMethod();
-    REQUIRE(::global_str == "test");
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+}
+
+TEST_CASE("called on exception lambda") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      STATE_SAVER(a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
+  }
+}
+
+TEST_CASE("dismiss before scope leave function") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("dismiss before scope leave lambda") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("dismiss before exception function") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("dismiss before exception lambda") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("called on exception, dismiss after exception") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+}
+
+TEST_CASE("called on exception, dismiss after exception lambda") {
+  SECTION("custom StateSaver") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
   }
 }
