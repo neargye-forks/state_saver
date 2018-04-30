@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// vesion 0.1.0
+// vesion 0.1.1
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // Copyright (c) 2018 Daniil Goncharov <neargye@gmail.com>.
@@ -36,14 +36,17 @@
 namespace state_saver {
 
 template <typename T>
-struct StateSaver {
-  static_assert(std::is_copy_constructible<T>::value,
+struct StateSaver final {
+  static_assert(::std::is_copy_constructible<T>::value ||
+                ::std::is_copy_constructible<T&>::value,
                 "StateSaver requirement copy constructible");
-  static_assert(std::is_move_assignable<T>::value || std::is_copy_assignable<T>::value,
+  static_assert(::std::is_move_assignable<T>::value ||
+                ::std::is_copy_assignable<T>::value ||
+                ::std::is_copy_assignable<T&>::value,
                 "StateSaver requirement operator =");
-  static_assert(!std::is_pointer<T>::value,
+  static_assert(!::std::is_pointer<T>::value,
                 "StateSaver requirement not pointer type");
-  static_assert(!std::is_function<T>::value,
+  static_assert(!::std::is_function<T>::value,
                 "StateSaver requirement not function type");
 
   StateSaver() = delete;
@@ -52,10 +55,11 @@ struct StateSaver {
   StateSaver& operator=(const StateSaver&) = delete;
   StateSaver& operator=(StateSaver&&) = delete;
 
-  explicit StateSaver(T&& object) = delete;
-  explicit StateSaver(const T& object) = delete;
+  StateSaver(T&& object) = delete;
+  StateSaver(const T& object) = delete;
 
-  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_copy_constructible<T>::value)
+  inline explicit StateSaver(T& object) noexcept(::std::is_nothrow_copy_constructible<T>::value ||
+                                                 ::std::is_nothrow_copy_constructible<T&>::value)
       : restore{true},
         previous_ref{object},
         previous_value{object} {}
@@ -64,16 +68,22 @@ struct StateSaver {
     restore = false;
   }
 
-  inline ~StateSaver() noexcept(std::is_nothrow_move_assignable<T>::value ||
-                                std::is_nothrow_copy_assignable<T>::value) {
+  inline ~StateSaver() noexcept(::std::is_nothrow_move_assignable<T>::value ||
+                                ::std::is_nothrow_copy_assignable<T>::value ||
+                                ::std::is_nothrow_copy_assignable<T&>::value) {
     if (restore)
-      previous_ref = std::move_if_noexcept(previous_value);
+      previous_ref = static_cast<
+          typename ::std::conditional<
+              ::std::is_nothrow_move_assignable<T>::value ||
+              !(::std::is_copy_assignable<T>::value ||
+                ::std::is_copy_assignable<T&>::value),
+                    T&&, T&>::type>(previous_value);
   }
 
  private:
   bool restore;
   T& previous_ref;
-  const T previous_value;
+  T previous_value;
 };
 
 } // namespace state_saver
@@ -113,18 +123,18 @@ struct StateSaver {
 # define STR_CONCAT(s1, s2) STR_CONCAT_(s1, s2)
 #endif
 
-#define MAKE_STATE_SAVER(state_saver_name, x)              \
-  ::state_saver::StateSaver<std::decay<decltype(x)>::type> \
+#define MAKE_STATE_SAVER(state_saver_name, x)                \
+  ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
   state_saver_name{(x)};
 
 #if defined(__COUNTER__)
-#  define STATE_SAVER(x)                                     \
-    CPP_ATTRIBUTE_UNUSED                                     \
-    ::state_saver::StateSaver<std::decay<decltype(x)>::type> \
+#  define STATE_SAVER(x)                                       \
+    CPP_ATTRIBUTE_UNUSED                                       \
+    ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
     STR_CONCAT(__state_saver__object__, __COUNTER__){(x)};
 #elif defined(__LINE__)
-#  define STATE_SAVER(x)                                     \
-    CPP_ATTRIBUTE_UNUSED                                     \
-    ::state_saver::StateSaver<std::decay<decltype(x)>::type> \
+#  define STATE_SAVER(x)                                       \
+    CPP_ATTRIBUTE_UNUSED                                       \
+    ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
     STR_CONCAT(__state_saver__object__, __LINE__){(x)};
 #endif
