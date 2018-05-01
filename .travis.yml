@@ -8,9 +8,7 @@ git:
   depth: 1
 
 matrix:
-  fast_finish: true
-
-matrix:
+  fast_finish: false
   include:
     # g++4.8 bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=50025
     #- os: linux
