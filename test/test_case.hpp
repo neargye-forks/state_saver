@@ -21,6 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <utility>
+
 #if defined(TEST_CASE_1)
 struct A {
   int i = 0;
@@ -116,5 +118,35 @@ struct A {
   A(A&) = default;
   A& operator=(A&) = default;
   A& operator=(A&&) = delete;
+};
+#elif defined(TEST_CASE_9)
+struct A {
+  int i = 0;
+  A(int i) : i{i} {}
+  A() = default;
+  ~A() = default;
+  A(A&&) = default;
+
+  A(const A&) = default;
+  A& operator=(const A& other) noexcept(false) {
+    i = other.i;
+    return *this;
+  }
+  A& operator=(A&&) = default;
+};
+#elif defined(TEST_CASE_10)
+struct A {
+  int i = 0;
+  A(int i) : i{i} {}
+  A() = default;
+  ~A() = default;
+  A(A&&) = default;
+
+  A(const A&) = default;
+  A& operator=(const A&) = default;
+  A& operator=(A&& other) noexcept(false) {
+    i = std::move(other.i);
+    return *this;
+  }
 };
 #endif
