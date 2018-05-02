@@ -71,13 +71,17 @@ struct StateSaver final {
   inline ~StateSaver() noexcept(::std::is_nothrow_move_assignable<T>::value ||
                                 ::std::is_nothrow_copy_assignable<T>::value ||
                                 ::std::is_nothrow_copy_assignable<T&>::value) {
+    using AssignableType = typename ::std::conditional<
+        ::std::is_nothrow_move_assignable<T>::value ||
+            !(::std::is_copy_assignable<T>::value ||
+              ::std::is_copy_assignable<T&>::value) ||
+            (!(::std::is_nothrow_copy_assignable<T>::value ||
+               ::std::is_nothrow_copy_assignable<T&>::value) &&
+             ::std::is_move_assignable<T>::value),
+        T&&, T&>::type;
+
     if (restore)
-      previous_ref = static_cast<
-          typename ::std::conditional<
-              ::std::is_nothrow_move_assignable<T>::value ||
-              !(::std::is_copy_assignable<T>::value ||
-                ::std::is_copy_assignable<T&>::value),
-                    T&&, T&>::type>(previous_value);
+      previous_ref = static_cast<AssignableType>(previous_value);
   }
 
  private:
