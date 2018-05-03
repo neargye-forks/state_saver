@@ -36,7 +36,7 @@
 namespace state_saver {
 
 template <typename T>
-struct StateSaver final {
+class StateSaver final {
   static_assert(::std::is_copy_constructible<T>::value ||
                 ::std::is_copy_constructible<T&>::value,
                 "StateSaver requirement copy constructible");
@@ -49,6 +49,7 @@ struct StateSaver final {
   static_assert(!::std::is_function<T>::value,
                 "StateSaver requirement not function type");
 
+ public:
   StateSaver() = delete;
   StateSaver(const StateSaver&) = delete;
   StateSaver(StateSaver&&) = delete;
@@ -100,10 +101,10 @@ struct StateSaver final {
 #  endif
 #endif
 
-  // CPP_ATTRIBUTE_UNUSED indicates that a function, variable or parameter might or might not be used.
+// CPP_ATTRIBUTE_UNUSED indicates that a function, variable or parameter might or might not be used.
 #if !defined(CPP_ATTRIBUTE_UNUSED)
 #  if defined(_MSC_VER)
-#    if CPP_HAS_ATTRIBUTE(maybe_unused) || (_MSC_VER >= 1911 && _HAS_CXX17)
+#    if CPP_HAS_ATTRIBUTE(maybe_unused) || (_MSC_VER >= 1911 && _MSVC_LANG >= 201703L)
 #      define CPP_ATTRIBUTE_UNUSED [[maybe_unused]]
 #    else
 #      define CPP_ATTRIBUTE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
@@ -120,11 +121,11 @@ struct StateSaver final {
 #endif
 
 #if !defined(STR_CONCAT_)
-# define STR_CONCAT_(s1, s2) s1##s2
+#  define STR_CONCAT_(s1, s2) s1##s2
 #endif
 
 #if !defined(STR_CONCAT)
-# define STR_CONCAT(s1, s2) STR_CONCAT_(s1, s2)
+#  define STR_CONCAT(s1, s2) STR_CONCAT_(s1, s2)
 #endif
 
 #define MAKE_STATE_SAVER(state_saver_name, x)                \
