@@ -61,12 +61,12 @@ class StateSaver final {
 
   inline explicit StateSaver(T& object) noexcept(::std::is_nothrow_copy_constructible<T>::value ||
                                                  ::std::is_nothrow_copy_constructible<T&>::value)
-      : restore{true},
-        previous_ref{object},
-        previous_value{object} {}
+      : restore_{true},
+        previous_ref_{object},
+        previous_value_{object} {}
 
   inline void Dismiss() noexcept {
-    restore = false;
+    restore_ = false;
   }
 
   inline ~StateSaver() noexcept(::std::is_nothrow_move_assignable<T>::value ||
@@ -81,14 +81,14 @@ class StateSaver final {
              ::std::is_move_assignable<T>::value),
         T&&, T&>::type;
 
-    if (restore)
-      previous_ref = static_cast<AssignableType>(previous_value);
+    if (restore_)
+      previous_ref_ = static_cast<AssignableType>(previous_value_);
   }
 
  private:
-  bool restore;
-  T& previous_ref;
-  T previous_value;
+  bool restore_;
+  T& previous_ref_;
+  T previous_value_;
 };
 
 } // namespace state_saver
