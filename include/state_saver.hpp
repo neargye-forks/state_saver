@@ -130,18 +130,15 @@ class StateSaver final {
 #  define STR_CONCAT(s1, s2) STR_CONCAT_(s1, s2)
 #endif
 
-#define MAKE_STATE_SAVER(state_saver_name, x)                \
-  ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
-  state_saver_name{(x)};
+#define MAKE_STATE_SAVER(name, x) \
+  ::state_saver::StateSaver<::std::decay<decltype(x)>::type> name{x};
 
 #if defined(__COUNTER__)
-#  define STATE_SAVER(x)                                       \
-    CPP_ATTRIBUTE_UNUSED                                       \
-    ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
-    STR_CONCAT(__state_saver__object__, __COUNTER__){(x)};
+#  define STATE_SAVER(x)       \
+    CPP_ATTRIBUTE_UNUSED const \
+    MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __COUNTER__), x);
 #elif defined(__LINE__)
-#  define STATE_SAVER(x)                                       \
-    CPP_ATTRIBUTE_UNUSED                                       \
-    ::state_saver::StateSaver<::std::decay<decltype(x)>::type> \
-    STR_CONCAT(__state_saver__object__, __LINE__){(x)};
+#  define STATE_SAVER(x)       \
+    CPP_ATTRIBUTE_UNUSED const \
+    MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __LINE__), x);
 #endif
