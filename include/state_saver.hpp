@@ -37,6 +37,12 @@ namespace state_saver {
 
 template <typename T>
 class StateSaver final {
+  static_assert(!::std::is_array<T>::value,
+                "StateSaver requirement not array type");
+  static_assert(!::std::is_pointer<T>::value,
+                "StateSaver requirement not pointer type");
+  static_assert(!::std::is_function<T>::value,
+                "StateSaver requirement not function type");
   static_assert(::std::is_copy_constructible<T>::value ||
                 ::std::is_copy_constructible<T&>::value,
                 "StateSaver requirement copy constructible");
@@ -44,10 +50,6 @@ class StateSaver final {
                 ::std::is_copy_assignable<T>::value ||
                 ::std::is_copy_assignable<T&>::value,
                 "StateSaver requirement operator =");
-  static_assert(!::std::is_pointer<T>::value,
-                "StateSaver requirement not pointer type");
-  static_assert(!::std::is_function<T>::value,
-                "StateSaver requirement not function type");
 
  public:
   StateSaver() = delete;
