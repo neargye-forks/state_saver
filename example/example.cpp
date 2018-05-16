@@ -27,13 +27,16 @@
 void Foo1(int& a){
   STATE_SAVER(a);
   a = 100;
-  std::cout << "Foo::a = " << a << std::endl;
+  std::cout << "Foo1::a = " << a << std::endl;
 }
 
 void Foo2(int& a) {
   MAKE_STATE_SAVER(state_saver, a);
   a = 100;
-  std::cout << "Foo::a = " << a << std::endl;
+  std::cout << "Foo2::a = " << a << std::endl;
+  state_saver.Restore();
+  std::cout << "Foo2::a = " << a << std::endl;
+  a = 101;
   state_saver.Dismiss();
 }
 
