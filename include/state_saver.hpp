@@ -51,6 +51,12 @@ class StateSaver final {
                 ::std::is_copy_assignable<T&>::value,
                 "StateSaver requirement operator =");
 
+  using NoexceptRestore =
+      ::std::integral_constant<bool,
+                               ::std::is_nothrow_move_assignable<T>::value ||
+                                   ::std::is_nothrow_copy_assignable<T>::value ||
+                                   ::std::is_nothrow_copy_assignable<T&>::value>;
+
  public:
   StateSaver() = delete;
   StateSaver(const StateSaver&) = delete;
@@ -71,9 +77,7 @@ class StateSaver final {
     restore_ = false;
   }
 
-  inline void Restore() noexcept(::std::is_nothrow_move_assignable<T>::value ||
-                                 ::std::is_nothrow_copy_assignable<T>::value ||
-                                 ::std::is_nothrow_copy_assignable<T&>::value) {
+  inline void Restore() noexcept(NoexceptRestore::value) {
     using AssignableType = typename ::std::conditional<
         ::std::is_nothrow_move_assignable<T>::value ||
             !(::std::is_copy_assignable<T>::value ||
@@ -87,7 +91,7 @@ class StateSaver final {
       previous_ref_ = static_cast<AssignableType>(previous_value_);
   }
 
-  inline ~StateSaver() noexcept(noexcept(Restore())) {
+  inline ~StateSaver() noexcept(NoexceptRestore::value) {
     Restore();
   }
 
