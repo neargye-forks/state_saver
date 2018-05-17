@@ -44,11 +44,11 @@ class StateSaver final {
   static_assert(!::std::is_function<T>::value,
                 "StateSaver requirement not function type");
   static_assert(::std::is_copy_constructible<T>::value ||
-                ::std::is_copy_constructible<T&>::value,
+                    ::std::is_copy_constructible<T&>::value,
                 "StateSaver requirement copy constructible");
   static_assert(::std::is_move_assignable<T>::value ||
-                ::std::is_copy_assignable<T>::value ||
-                ::std::is_copy_assignable<T&>::value,
+                    ::std::is_copy_assignable<T>::value ||
+                    ::std::is_copy_assignable<T&>::value,
                 "StateSaver requirement operator =");
 
  public:
