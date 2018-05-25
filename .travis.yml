@@ -10,11 +10,10 @@ git:
 matrix:
   fast_finish: false
   include:
-    # g++4.8 bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=50025
-    #- os: linux
-    #  compiler: g++
-    #  env:
-    #    - CXX_COMPILER=g++-4.8 CC_COMPILER=gcc-4.8 CONFIGURATION=Debug
+    - os: linux
+      compiler: g++
+      env:
+        - CXX_COMPILER=g++-4.8 CC_COMPILER=gcc-4.8 CONFIGURATION=Debug
 
     - os: linux
       compiler: g++
@@ -61,6 +60,17 @@ matrix:
         - CXX_COMPILER=g++-7 CC_COMPILER=gcc-7 CONFIGURATION=Debug
 
     - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - CXX_COMPILER=g++-8 CC_COMPILER=gcc-8 CONFIGURATION=Debug
+
+    - os: linux
       compiler: clang++
       addons:
         apt:
@@ -95,6 +105,24 @@ matrix:
             - clang-6.0
       env:
         - CXX_COMPILER=clang++-6.0 CC_COMPILER=clang-6.0 CONFIGURATION=Debug
+
+    - os: osx
+      compiler: clang++
+      osx_image: xcode8.0
+      env:
+        - CONFIGURATION=Debug
+
+    - os: osx
+      compiler: clang++
+      osx_image: xcode8.1
+      env:
+        - CONFIGURATION=Debug
+
+    - os: osx
+      compiler: clang++
+      osx_image: xcode8.2
+      env:
+        - CONFIGURATION=Debug
 
     - os: osx
       compiler: clang++
