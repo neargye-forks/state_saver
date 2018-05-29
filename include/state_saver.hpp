@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// vesion 0.1.2
+// vesion 0.1.3
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // Copyright (c) 2018 Daniil Goncharov <neargye@gmail.com>.
@@ -37,19 +37,21 @@ namespace state_saver {
 
 template <typename T>
 class StateSaver final {
-  static_assert(!::std::is_array<T>::value,
-                "StateSaver requirement not array type");
-  static_assert(!::std::is_pointer<T>::value,
-                "StateSaver requirement not pointer type");
-  static_assert(!::std::is_function<T>::value,
-                "StateSaver requirement not function type");
-  static_assert(::std::is_copy_constructible<T>::value ||
-                    ::std::is_copy_constructible<T&>::value,
-                "StateSaver requirement copy constructible");
-  static_assert(::std::is_move_assignable<T>::value ||
-                    ::std::is_copy_assignable<T>::value ||
-                    ::std::is_copy_assignable<T&>::value,
-                "StateSaver requirement operator =");
+  static_assert(!std::is_const<T>::value,
+                "StateSaver requirement not const.");
+  static_assert(!std::is_array<T>::value,
+                "StateSaver requirement not array type.");
+  static_assert(!std::is_pointer<T>::value,
+                "StateSaver requirement not pointer type.");
+  static_assert(!std::is_function<T>::value,
+                "StateSaver requirement not function type.");
+  static_assert(std::is_copy_constructible<T>::value ||
+                    std::is_copy_constructible<T&>::value,
+                "StateSaver requirement copy constructible.");
+  static_assert(std::is_move_assignable<T>::value ||
+                    std::is_copy_assignable<T>::value ||
+                    std::is_copy_assignable<T&>::value,
+                "StateSaver requirement operator=.");
 
  public:
   StateSaver() = delete;
@@ -61,8 +63,8 @@ class StateSaver final {
   StateSaver(T&& object) = delete;
   StateSaver(const T& object) = delete;
 
-  inline explicit StateSaver(T& object) noexcept(::std::is_nothrow_copy_constructible<T>::value ||
-                                                 ::std::is_nothrow_copy_constructible<T&>::value)
+  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_copy_constructible<T>::value ||
+                                                 std::is_nothrow_copy_constructible<T&>::value)
       : restore_(true),
         previous_ref_(object),
         previous_value_(object) {}
@@ -71,23 +73,23 @@ class StateSaver final {
     restore_ = false;
   }
 
-  inline void Restore(bool restore_force = true) noexcept(::std::is_nothrow_copy_assignable<T>::value ||
-                                                          ::std::is_nothrow_copy_assignable<T&>::value) {
+  inline void Restore(bool restore_force = true) noexcept(std::is_nothrow_copy_assignable<T>::value ||
+                                                          std::is_nothrow_copy_assignable<T&>::value) {
     if (restore_ || restore_force) {
       previous_ref_ = previous_value_;
     }
   }
 
-  inline ~StateSaver() noexcept(::std::is_nothrow_move_assignable<T>::value ||
-                                ::std::is_nothrow_copy_assignable<T>::value ||
-                                ::std::is_nothrow_copy_assignable<T&>::value) {
-    using AssignableType = typename ::std::conditional<
-        ::std::is_nothrow_move_assignable<T>::value ||
-            !(::std::is_copy_assignable<T>::value ||
-              ::std::is_copy_assignable<T&>::value) ||
-            (!(::std::is_nothrow_copy_assignable<T>::value ||
-               ::std::is_nothrow_copy_assignable<T&>::value) &&
-             ::std::is_move_assignable<T>::value),
+  inline ~StateSaver() noexcept(std::is_nothrow_move_assignable<T>::value ||
+                                std::is_nothrow_copy_assignable<T>::value ||
+                                std::is_nothrow_copy_assignable<T&>::value) {
+    using AssignableType = typename std::conditional<
+        std::is_nothrow_move_assignable<T>::value ||
+            !(std::is_copy_assignable<T>::value ||
+              std::is_copy_assignable<T&>::value) ||
+            (!(std::is_nothrow_copy_assignable<T>::value ||
+               std::is_nothrow_copy_assignable<T&>::value) &&
+             std::is_move_assignable<T>::value),
         T&&, T&>::type;
 
     if (restore_) {
@@ -137,7 +139,7 @@ class StateSaver final {
 #endif
 
 #define MAKE_STATE_SAVER(name, x) \
-  ::state_saver::StateSaver<::std::decay<decltype(x)>::type> name{x};
+  ::state_saver::StateSaver<std::remove_reference<decltype(x)>::type> name{x};
 
 #if defined(__COUNTER__)
 #  define STATE_SAVER(x)             \
