@@ -30,13 +30,9 @@
 
 #include "test_case.hpp"
 
-using namespace state_saver;
-
 A na;
-static_assert(noexcept(StateSaver<A>{na}), "");
-static_assert(noexcept(StateSaver<A>{na}.Dismiss()), "");
-static_assert(noexcept(StateSaver<A>{na}.Restore()), "");
-static_assert(noexcept(StateSaver<A>{na}.~StateSaver()), "");
+static_assert(noexcept(state_saver::StateSaver<A>{na}), "");
+static_assert(noexcept(state_saver::StateSaver<A>{na}.~StateSaver()), "");
 
 constexpr const int value = -1;
 constexpr const int other_value = 1;
