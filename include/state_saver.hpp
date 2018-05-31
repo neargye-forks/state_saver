@@ -39,6 +39,8 @@ template <typename T>
 class StateSaver final {
   static_assert(!std::is_const<T>::value,
                 "StateSaver requirement not const.");
+  static_assert(!std::is_reference<T>::value,
+                "StateSaver requirement not reference.");
   static_assert(!std::is_array<T>::value,
                 "StateSaver requirement not array type.");
   static_assert(!std::is_pointer<T>::value,
