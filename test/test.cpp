@@ -34,6 +34,8 @@ using namespace state_saver;
 
 A na;
 static_assert(noexcept(StateSaver<A>{na}), "");
+static_assert(noexcept(StateSaver<A>{na}.Dismiss()), "");
+static_assert(noexcept(StateSaver<A>{na}.Restore()), "");
 static_assert(noexcept(StateSaver<A>{na}.~StateSaver()), "");
 
 constexpr const int value = -1;
