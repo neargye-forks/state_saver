@@ -47,12 +47,9 @@ class StateSaver final {
                 "StateSaver requirement not pointer type.");
   static_assert(!std::is_function<T>::value,
                 "StateSaver requirement not function type.");
-  static_assert(std::is_copy_constructible<T>::value ||
-                    std::is_copy_constructible<T&>::value,
+  static_assert(std::is_constructible<T, T&>::value || std::is_constructible<T, T&&>::value,
                 "StateSaver requirement copy constructible.");
-  static_assert(std::is_move_assignable<T>::value ||
-                    std::is_copy_assignable<T>::value ||
-                    std::is_copy_assignable<T&>::value,
+  static_assert(std::is_assignable<T&, T&>::value || std::is_assignable<T&, T&&>::value,
                 "StateSaver requirement operator=.");
 
  public:
@@ -80,16 +77,12 @@ class StateSaver final {
     }
   }
 
-  inline ~StateSaver() noexcept(std::is_nothrow_move_assignable<T>::value ||
-                                std::is_nothrow_copy_assignable<T>::value ||
-                                std::is_nothrow_copy_assignable<T&>::value) {
+  inline ~StateSaver() noexcept(std::is_nothrow_assignable<T&, T&&>::value ||
+                                std::is_nothrow_assignable<T&, T&>::value) {
     using AssignableType = typename std::conditional<
-        std::is_nothrow_move_assignable<T>::value ||
-            !(std::is_copy_assignable<T>::value ||
-              std::is_copy_assignable<T&>::value) ||
-            (!(std::is_nothrow_copy_assignable<T>::value ||
-               std::is_nothrow_copy_assignable<T&>::value) &&
-             std::is_move_assignable<T>::value),
+        std::is_nothrow_assignable<T&, T&&>::value ||
+            !std::is_assignable<T&, T&>::value ||
+            (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T&&>::value),
         T&&, T&>::type;
 
     if (restore_) {
