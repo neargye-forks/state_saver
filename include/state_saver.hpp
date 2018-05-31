@@ -65,8 +65,7 @@ class StateSaver final {
   StateSaver(T&& object) = delete;
   StateSaver(const T& object) = delete;
 
-  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_copy_constructible<T>::value ||
-                                                 std::is_nothrow_copy_constructible<T&>::value)
+  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
       : restore_(true),
         previous_ref_(object),
         previous_value_(object) {}
