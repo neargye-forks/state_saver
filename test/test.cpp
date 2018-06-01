@@ -231,7 +231,7 @@ TEST_CASE("dismiss before exception lambda") {
   }
 }
 
-TEST_CASE("called on exception, dismiss after exception") {
+TEST_CASE("called on exception, dismiss after exception function") {
   SECTION("custom StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -255,7 +255,6 @@ TEST_CASE("called on exception, dismiss after exception lambda") {
     const auto SomeLambda = [&]() {
       MAKE_STATE_SAVER(state_saver, a);
       a.i = other_value;
-      REQUIRE(a.i == other_value);
       REQUIRE(a.i == other_value);
       throw std::exception{};
       state_saver.Dismiss();
