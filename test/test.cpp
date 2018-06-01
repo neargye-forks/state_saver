@@ -266,3 +266,137 @@ TEST_CASE("called on exception, dismiss after exception lambda") {
     REQUIRE(a.i == value);
   }
 }
+
+TEST_CASE("Restore function") {
+  SECTION("restore") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(false);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("restore force") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("dismiss, restore") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(false);
+      REQUIRE(a.i == other_value);
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+
+  SECTION("dismiss, restore force") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("Restore lambda") {
+  SECTION("restore") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(false);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("restore force") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("dismiss, restore") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(false);
+      REQUIRE(a.i == other_value);
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == other_value);
+  }
+
+  SECTION("dismiss, restore force") {
+    A a{value};
+    const auto SomeLambda = [&]() {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
