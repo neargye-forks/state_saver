@@ -34,10 +34,10 @@ A na;
 static_assert(noexcept(state_saver::StateSaver<A>{na}), "");
 static_assert(noexcept(state_saver::StateSaver<A>{na}.~StateSaver()), "");
 
-constexpr const int value = -1;
-constexpr const int other_value = 1;
+constexpr int value = -1;
+constexpr int other_value = 1;
 
-TEST_CASE("called on scope leave function") {
+TEST_CASE("called on scope leave") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -48,6 +48,17 @@ TEST_CASE("called on scope leave function") {
 
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+
+    const auto SomeLambda = [&]() {
+      STATE_SAVER(a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
     }());
     REQUIRE(a.i == value);
   }
@@ -64,26 +75,7 @@ TEST_CASE("called on scope leave function") {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
-  }
-}
 
-TEST_CASE("called on scope leave lambda") {
-  SECTION("StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      STATE_SAVER(a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-
-  SECTION("custom StateSaver") {
-    A a{value};
     const auto SomeLambda = [&]() {
       MAKE_STATE_SAVER(state_saver, a);
       a.i = other_value;
@@ -97,7 +89,7 @@ TEST_CASE("called on scope leave lambda") {
   }
 }
 
-TEST_CASE("called on exception function") {
+TEST_CASE("called on exception") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -129,39 +121,7 @@ TEST_CASE("called on exception function") {
   }
 }
 
-TEST_CASE("called on exception lambda") {
-  SECTION("StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      STATE_SAVER(a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      throw std::exception{};
-    };
-
-    REQUIRE_THROWS([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-
-  SECTION("custom StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      throw std::exception{};
-    };
-
-    REQUIRE_THROWS([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-}
-
-TEST_CASE("dismiss before scope leave function") {
+TEST_CASE("dismiss before scope leave") {
   SECTION("custom StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -178,24 +138,7 @@ TEST_CASE("dismiss before scope leave function") {
   }
 }
 
-TEST_CASE("dismiss before scope leave lambda") {
-  SECTION("custom StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Dismiss();
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == other_value);
-  }
-}
-
-TEST_CASE("dismiss before exception function") {
+TEST_CASE("dismiss before exception") {
   SECTION("custom StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -213,25 +156,7 @@ TEST_CASE("dismiss before exception function") {
   }
 }
 
-TEST_CASE("dismiss before exception lambda") {
-  SECTION("custom StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Dismiss();
-      throw std::exception{};
-    };
-
-    REQUIRE_THROWS([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == other_value);
-  }
-}
-
-TEST_CASE("called on exception, dismiss after exception function") {
+TEST_CASE("called on exception, dismiss after exception") {
   SECTION("custom StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -249,25 +174,7 @@ TEST_CASE("called on exception, dismiss after exception function") {
   }
 }
 
-TEST_CASE("called on exception, dismiss after exception lambda") {
-  SECTION("custom StateSaver") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      throw std::exception{};
-      state_saver.Dismiss();
-    };
-
-    REQUIRE_THROWS([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-}
-
-TEST_CASE("Restore function") {
+TEST_CASE("Restore") {
   SECTION("restore") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -329,73 +236,6 @@ TEST_CASE("Restore function") {
     };
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
-    }());
-    REQUIRE(a.i == other_value);
-  }
-}
-
-TEST_CASE("Restore lambda") {
-  SECTION("restore") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Restore(false);
-      REQUIRE(a.i == value);
-      a.i = other_value;
-    };
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-
-  SECTION("restore force") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Restore(true);
-      REQUIRE(a.i == value);
-      a.i = other_value;
-    };
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == value);
-  }
-
-  SECTION("dismiss, restore") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Dismiss();
-      state_saver.Restore(false);
-      REQUIRE(a.i == other_value);
-    };
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == other_value);
-  }
-
-  SECTION("dismiss, restore force") {
-    A a{value};
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
-      a.i = other_value;
-      REQUIRE(a.i == other_value);
-      state_saver.Dismiss();
-      state_saver.Restore(true);
-      REQUIRE(a.i == value);
-      a.i = other_value;
-    };
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
     }());
     REQUIRE(a.i == other_value);
   }
