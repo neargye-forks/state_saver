@@ -24,28 +24,29 @@
 #include <state_saver.hpp>
 #include <iostream>
 
-void Foo1(int& a){
+void Foo1(int& a) {
   STATE_SAVER(a);
   a = 100;
   std::cout << "Foo1::a = " << a << std::endl;
 }
 
-void Foo2(int& a) {
-  MAKE_STATE_SAVER(state_saver, a);
-  a = 100;
-  std::cout << "Foo2::a = " << a << std::endl;
-  state_saver.Restore();
-  std::cout << "Foo2::a = " << a << std::endl;
-  a = 101;
-  state_saver.Dismiss();
-}
-
 int main() {
   int a = 1;
   std::cout << "main::a = " << a << std::endl;
+
   Foo1(a);
   std::cout << "main::a = " << a << std::endl;
-  Foo2(a);
+
+  auto Foo2 = [&]() {
+    MAKE_STATE_SAVER(state_saver, a);
+    a = 100;
+    std::cout << "Foo2::a = " << a << std::endl;
+    state_saver.Restore(/*restore_force =*/ true);
+    std::cout << "Foo2::a = " << a << std::endl;
+    a = 101;
+    state_saver.Dismiss();
+  };
+  Foo2();
   std::cout << "main::a = " << a << std::endl;
 
   return 0;
