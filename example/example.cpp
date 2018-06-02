@@ -30,6 +30,15 @@ void Foo1(int& a) {
   std::cout << "Foo1::a = " << a << std::endl;
 }
 
+void Foo3(int& a) {
+  using namespace state_saver;
+
+  StateSaver<std::remove_reference<decltype(a)>::type> state_saver{a};
+  // or StateSaver<int> state_saver{a};
+  a = 100;
+  std::cout << "Foo3::a = " << a << std::endl;
+}
+
 int main() {
   int a = 1;
   std::cout << "main::a = " << a << std::endl;
@@ -47,6 +56,9 @@ int main() {
     state_saver.Dismiss();
   };
   Foo2();
+  std::cout << "main::a = " << a << std::endl;
+
+  Foo3(a);
   std::cout << "main::a = " << a << std::endl;
 
   return 0;
