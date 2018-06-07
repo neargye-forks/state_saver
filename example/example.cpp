@@ -33,7 +33,7 @@ void Foo1(int& a) {
 void Foo3(int& a) {
   using namespace state_saver;
 
-  StateSaver<std::remove_reference<decltype(a)>::type> state_saver{a};
+  StateSaver<decltype(a)> state_saver{a};
   // or StateSaver<int> state_saver{a};
   a = 100;
   std::cout << "Foo3::a = " << a << std::endl;
