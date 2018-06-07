@@ -37,19 +37,21 @@ namespace state_saver {
 
 template <typename T>
 class StateSaver final {
+  using O = typename std::remove_reference<T>::type;
+
   static_assert(!std::is_const<T>::value,
                 "StateSaver requirement not const.");
-  static_assert(!std::is_reference<T>::value,
-                "StateSaver requirement not reference.");
+  static_assert(std::is_lvalue_reference<T>::value || std::is_same<O, T>::value,
+                "StateSaver requirement reference or value.");
   static_assert(!std::is_array<T>::value,
                 "StateSaver requirement not array type.");
   static_assert(!std::is_pointer<T>::value,
                 "StateSaver requirement not pointer type.");
   static_assert(!std::is_function<T>::value,
                 "StateSaver requirement not function type.");
-  static_assert(std::is_constructible<T, T&>::value,
+  static_assert(std::is_constructible<O, O&>::value,
                 "StateSaver requirement copy constructible.");
-  static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
+  static_assert(std::is_assignable<O&, O>::value || std::is_assignable<O&, O&>::value,
                 "StateSaver requirement operator=.");
 
  public:
@@ -59,10 +61,10 @@ class StateSaver final {
   StateSaver& operator=(const StateSaver&) = delete;
   StateSaver& operator=(StateSaver&&) = delete;
 
-  StateSaver(T&& object) = delete;
-  StateSaver(const T& object) = delete;
+  StateSaver(O&& object) = delete;
+  StateSaver(const O& object) = delete;
 
-  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
+  inline explicit StateSaver(O& object) noexcept(std::is_nothrow_constructible<O, O&>::value)
       : restore_(true),
         previous_ref_(object),
         previous_value_(object) {}
@@ -71,20 +73,20 @@ class StateSaver final {
     restore_ = false;
   }
 
-  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  inline void Restore(bool restore_force) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
+  template <typename = typename std::enable_if<std::is_assignable<O&, O&>::value>::type>
+  inline void Restore(bool restore_force) noexcept(std::is_nothrow_assignable<O&, O&>::value) {
     if (restore_ || restore_force) {
       previous_ref_ = previous_value_;
     }
   }
 
-  inline ~StateSaver() noexcept(std::is_nothrow_assignable<T&, T>::value ||
-                                std::is_nothrow_assignable<T&, T&>::value) {
+  inline ~StateSaver() noexcept(std::is_nothrow_assignable<O&, O>::value ||
+                                std::is_nothrow_assignable<O&, O&>::value) {
     using AssignableType = typename std::conditional<
-        std::is_nothrow_assignable<T&, T>::value ||
-            !std::is_assignable<T&, T&>::value ||
-            (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
-        T&&, T&>::type;
+        std::is_nothrow_assignable<O&, O>::value ||
+            !std::is_assignable<O&, O&>::value ||
+            (!std::is_nothrow_assignable<O&, O&>::value && std::is_assignable<O&, O>::value),
+        O&&, O&>::type;
 
     if (restore_) {
       previous_ref_ = static_cast<AssignableType>(previous_value_);
@@ -93,8 +95,8 @@ class StateSaver final {
 
  private:
   bool restore_;
-  T& previous_ref_;
-  T previous_value_;
+  O& previous_ref_;
+  O previous_value_;
 };
 
 } // namespace state_saver
@@ -133,7 +135,7 @@ class StateSaver final {
 #endif
 
 #define MAKE_STATE_SAVER(name, x) \
-  ::state_saver::StateSaver<std::remove_reference<decltype(x)>::type> name{x};
+  ::state_saver::StateSaver<decltype(x)> name{x};
 
 #if defined(__COUNTER__)
 #  define STATE_SAVER(x)             \
