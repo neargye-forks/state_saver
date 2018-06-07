@@ -26,19 +26,50 @@
 
 #include <state_saver.hpp>
 
+using namespace state_saver;
+
 #include <stdexcept>
 
 #include "test_case.hpp"
 
-A na;
-static_assert(noexcept(state_saver::StateSaver<A>{na}), "");
-static_assert(noexcept(state_saver::StateSaver<A>{na}.~StateSaver()), "");
+A va;
+static_assert(noexcept(StateSaver<decltype(va)>{va}), "");
+static_assert(noexcept(StateSaver<decltype(va)>{va}.~StateSaver()), "");
+
+A& ra = va;
+static_assert(noexcept(StateSaver<decltype(ra)>{ra}), "");
+static_assert(noexcept(StateSaver<decltype(ra)>{ra}.~StateSaver()), "");
 
 constexpr int value = -1;
 constexpr int other_value = 1;
 
 TEST_CASE("called on scope leave") {
   SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+
+    const auto SomeLambda = [&]() {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeLambda();
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       STATE_SAVER(a);
@@ -63,7 +94,7 @@ TEST_CASE("called on scope leave") {
     REQUIRE(a.i == value);
   }
 
-  SECTION("custom StateSaver") {
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -93,6 +124,21 @@ TEST_CASE("called on exception") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("STATE_SAVER") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
       STATE_SAVER(a);
       a.i = other_value;
       REQUIRE(a.i == other_value);
@@ -105,7 +151,7 @@ TEST_CASE("called on exception") {
     REQUIRE(a.i == value);
   }
 
-  SECTION("custom StateSaver") {
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -122,7 +168,22 @@ TEST_CASE("called on exception") {
 }
 
 TEST_CASE("dismiss before scope leave") {
-  SECTION("custom StateSaver") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -139,7 +200,23 @@ TEST_CASE("dismiss before scope leave") {
 }
 
 TEST_CASE("dismiss before exception") {
-  SECTION("custom StateSaver") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      throw std::exception{};
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -157,7 +234,23 @@ TEST_CASE("dismiss before exception") {
 }
 
 TEST_CASE("called on exception, dismiss after exception") {
-  SECTION("custom StateSaver") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      throw std::exception{};
+      state_saver.Dismiss();
+    };
+
+    REQUIRE_THROWS([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -174,8 +267,25 @@ TEST_CASE("called on exception, dismiss after exception") {
   }
 }
 
-TEST_CASE("Restore") {
-  SECTION("restore") {
+TEST_CASE("restore") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(false);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -185,13 +295,33 @@ TEST_CASE("Restore") {
       REQUIRE(a.i == value);
       a.i = other_value;
     };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == value);
+  }
+}
+
+TEST_CASE("restore force") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
   }
 
-  SECTION("restore force") {
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -201,29 +331,70 @@ TEST_CASE("Restore") {
       REQUIRE(a.i == value);
       a.i = other_value;
     };
+
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
   }
+}
 
-  SECTION("dismiss, restore") {
+TEST_CASE("dismiss, restore") {
+  SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      StateSaver<decltype(a)> state_saver{a};
       a.i = other_value;
       REQUIRE(a.i == other_value);
       state_saver.Dismiss();
       state_saver.Restore(false);
       REQUIRE(a.i == other_value);
     };
+
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == other_value);
   }
 
-  SECTION("dismiss, restore force") {
+  SECTION("MAKE_STATE_SAVER") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      MAKE_STATE_SAVER(state_saver, a);
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(false);
+      REQUIRE(a.i == other_value);
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+}
+
+TEST_CASE("dismiss, restore force") {
+  SECTION("StateSaver") {
+    A a{value};
+    const auto SomeFunction = [](A& a) {
+      StateSaver<decltype(a)> state_saver{a};
+      a.i = other_value;
+      REQUIRE(a.i == other_value);
+      state_saver.Dismiss();
+      state_saver.Restore(true);
+      REQUIRE(a.i == value);
+      a.i = other_value;
+    };
+
+    REQUIRE_NOTHROW([&]() {
+      SomeFunction(a);
+    }());
+    REQUIRE(a.i == other_value);
+  }
+
+  SECTION("MAKE_STATE_SAVER") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       MAKE_STATE_SAVER(state_saver, a);
@@ -234,6 +405,7 @@ TEST_CASE("Restore") {
       REQUIRE(a.i == value);
       a.i = other_value;
     };
+
     REQUIRE_NOTHROW([&]() {
       SomeFunction(a);
     }());
