@@ -32,16 +32,18 @@ using namespace state_saver;
 
 #include "test_case.hpp"
 
-A va;
-static_assert(noexcept(StateSaver<decltype(va)>{va}), "");
-static_assert(noexcept(StateSaver<decltype(va)>{va}.~StateSaver()), "");
-
-A& ra = va;
-static_assert(noexcept(StateSaver<decltype(ra)>{ra}), "");
-static_assert(noexcept(StateSaver<decltype(ra)>{ra}.~StateSaver()), "");
-
 constexpr int value = -1;
 constexpr int other_value = 1;
+
+TEST_CASE("compilation") {
+  A va;
+  static_assert(noexcept(StateSaver<decltype(va)>{va}), "");
+  static_assert(noexcept(StateSaver<decltype(va)>{va}.~StateSaver()), "");
+
+  A& ra = va;
+  static_assert(noexcept(StateSaver<decltype(ra)>{ra}), "");
+  static_assert(noexcept(StateSaver<decltype(ra)>{ra}.~StateSaver()), "");
+}
 
 TEST_CASE("called on scope leave") {
   SECTION("StateSaver") {
