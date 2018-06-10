@@ -38,15 +38,15 @@ template <typename U>
 class StateSaver final {
   using T = typename std::remove_reference<U>::type;
 
-  static_assert(!std::is_const<U>::value,
+  static_assert(!std::is_const<T>::value,
                 "StateSaver requirement not const type.");
   static_assert(std::is_lvalue_reference<U>::value || std::is_same<T, U>::value,
-                "StateSaver requirement reference or value type.");
-  static_assert(!std::is_array<U>::value,
+                "StateSaver requirement lvalue type.");
+  static_assert(!std::is_array<T>::value,
                 "StateSaver requirement not array type.");
-  static_assert(!std::is_pointer<U>::value,
+  static_assert(!std::is_pointer<T>::value,
                 "StateSaver requirement not pointer type.");
-  static_assert(!std::is_function<U>::value,
+  static_assert(!std::is_function<T>::value,
                 "StateSaver requirement not function type.");
   static_assert(std::is_constructible<T, T&>::value,
                 "StateSaver requirement copy constructible.");
