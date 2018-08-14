@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include <state_saver.hpp>
+
 #include <iostream>
 
 void Foo1(int& a) {
@@ -33,8 +34,12 @@ void Foo1(int& a) {
 void Foo3(int& a) {
   using namespace state_saver;
 
-  StateSaver<decltype(a)> state_saver{a};
-  // or StateSaver<int> state_saver{a};
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
+  StateSaver state_saver{a};
+#else
+  StateSaver<decltype(a)> state_saver{a}; // or StateSaver<int> state_saver{a};
+#endif
+
   a = 100;
   std::cout << "Foo3::a = " << a << std::endl;
 }

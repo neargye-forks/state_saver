@@ -98,6 +98,11 @@ class StateSaver final {
   T previous_value_;
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
+template <typename T>
+StateSaver(T&) -> StateSaver<T>;
+#endif
+
 } // namespace state_saver
 
 // ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
