@@ -60,27 +60,27 @@ class StateSaver final {
   StateSaver& operator=(const StateSaver&) = delete;
   StateSaver& operator=(StateSaver&&) = delete;
 
-  StateSaver(T&& object) = delete;
-  StateSaver(const T& object) = delete;
+  StateSaver(T&&) = delete;
+  StateSaver(const T&) = delete;
 
-  inline explicit StateSaver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
+  explicit StateSaver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
       : restore_(true),
         previous_ref_(object),
         previous_value_(object) {}
 
-  inline void Dismiss() noexcept {
+  void Dismiss() noexcept {
     restore_ = false;
   }
 
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  inline void Restore(bool restore_force) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
-    if (restore_ || restore_force) {
+  void Restore(bool force) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
+    if (restore_ || force) {
       previous_ref_ = previous_value_;
     }
   }
 
-  inline ~StateSaver() noexcept(std::is_nothrow_assignable<T&, T>::value ||
-                                std::is_nothrow_assignable<T&, T&>::value) {
+  ~StateSaver() noexcept(std::is_nothrow_assignable<T&, T>::value ||
+                         std::is_nothrow_assignable<T&, T&>::value) {
     using AssignableType = typename std::conditional<
         std::is_nothrow_assignable<T&, T>::value ||
             !std::is_assignable<T&, T&>::value ||
@@ -100,28 +100,28 @@ class StateSaver final {
 
 } // namespace state_saver
 
-// CPP_ATTRIBUTE_MAYBE_UNUSED indicates that a function, variable or parameter might or might not be used.
-#if !defined(CPP_ATTRIBUTE_MAYBE_UNUSED)
+// ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
+#if !defined(ATTR_MAYBE_UNUSED)
 #  if defined(_MSC_VER)
-#    if (_MSC_VER >= 1911 && _MSVC_LANG >= 201703L)
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED [[maybe_unused]]
+#    if (_MSC_VER >= 1911 && defined(_MSVC_LANG) &&_MSVC_LANG >= 201703L)
+#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
+#      define ATTR_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
 #    endif
 #  elif defined(__clang__)
 #    if ((__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 9)) && __cplusplus >= 201703L)
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED [[maybe_unused]]
+#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED __attribute__((__unused__))
+#      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
 #    endif
 #  elif defined(__GNUC__)
 #    if (__GNUC__ > 7 && __cplusplus >= 201703L)
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED [[maybe_unused]]
+#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define CPP_ATTRIBUTE_MAYBE_UNUSED __attribute__((__unused__))
+#      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
 #    endif
 #  else
-#    define CPP_ATTRIBUTE_MAYBE_UNUSED
+#    define ATTR_MAYBE_UNUSED
 #  endif
 #endif
 
@@ -134,14 +134,14 @@ class StateSaver final {
 #endif
 
 #define MAKE_STATE_SAVER(name, x) \
-  ::state_saver::StateSaver<decltype(x)> name{x};
+  ::state_saver::StateSaver<decltype(x)> (name){x};
 
 #if defined(__COUNTER__)
-#  define STATE_SAVER(x)             \
-    CPP_ATTRIBUTE_MAYBE_UNUSED const \
+#  define STATE_SAVER(x)    \
+    ATTR_MAYBE_UNUSED const \
     MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __COUNTER__), x);
 #elif defined(__LINE__)
-#  define STATE_SAVER(x)             \
-    CPP_ATTRIBUTE_MAYBE_UNUSED const \
+#  define STATE_SAVER(x)    \
+    ATTR_MAYBE_UNUSED const \
     MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __LINE__), x);
 #endif
