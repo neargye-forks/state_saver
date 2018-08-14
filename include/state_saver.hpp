@@ -40,7 +40,8 @@ class StateSaver final {
 
   static_assert(!std::is_const<T>::value,
                 "StateSaver requirement not const type.");
-  static_assert(std::is_lvalue_reference<U>::value || std::is_same<T, U>::value,
+  static_assert(!std::is_rvalue_reference<U>::value &&
+                    (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
                 "StateSaver requirement lvalue type.");
   static_assert(!std::is_array<T>::value,
                 "StateSaver requirement not array type.");
