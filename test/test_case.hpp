@@ -32,70 +32,50 @@ struct A {
   A(A&&) = default;
 
 #if defined(TEST_CASE_1)
-
   A(const A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) = default;
-
 #elif defined(TEST_CASE_2)
-
   A(const A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) = delete;
-
 #elif defined(TEST_CASE_3)
-
   A(const A&) = default;
   A& operator=(A&) = default;
   A& operator=(A&&) = default;
-
 #elif defined(TEST_CASE_4)
-
   A(const A&) = default;
   A& operator=(A&) = default;
   A& operator=(A&&) = delete;
-
 #elif defined(TEST_CASE_5)
-
   A(A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) = default;
-
 #elif defined(TEST_CASE_6)
-
   A(A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) = delete;
-
 #elif defined(TEST_CASE_7)
-
   A(A&) = default;
   A& operator=(A&) = default;
   A& operator=(A&&) = default;
-
 #elif defined(TEST_CASE_8)
-
   A(A&) = default;
   A& operator=(A&) = default;
   A& operator=(A&&) = delete;
-
 #elif defined(TEST_CASE_9)
-
   A(const A&) = default;
   A& operator=(const A& other) noexcept(false) {
     i = other.i;
     return *this;
   }
   A& operator=(A&&) = default;
-
 #elif defined(TEST_CASE_10)
-
   A(const A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&& other) noexcept(false) {
     i = std::move(other.i);
     return *this;
   }
-
 #endif
 };

@@ -28,7 +28,7 @@
 
 using namespace state_saver;
 
-#include <stdexcept>
+#include <exception>
 
 #include "test_case.hpp"
 
@@ -36,6 +36,99 @@ constexpr int value = -1;
 constexpr int other_value = 1;
 
 TEST_CASE("compilation") {
+#if defined(TEST_CASE_1)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_2)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(!std::is_assignable<A&, A>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_3)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_4)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(!std::is_assignable<A&, A>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_5)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_6)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(!std::is_assignable<A&, A>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_7)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_8)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(!std::is_assignable<A&, A>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+
+#elif defined(TEST_CASE_9)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A&>::value, "");
+#elif defined(TEST_CASE_10)
+  static_assert(std::is_constructible<A, A&>::value, "");
+  static_assert(std::is_nothrow_constructible<A, A&>::value, "");
+
+  static_assert(std::is_assignable<A&, A>::value, "");
+  static_assert(!std::is_nothrow_assignable<A&, A>::value, "");
+
+  static_assert(std::is_assignable<A&, A&>::value, "");
+  static_assert(std::is_nothrow_assignable<A&, A&>::value, "");
+#endif
+
   A va;
   static_assert(noexcept(StateSaver<decltype(va)>{va}), "");
   static_assert(noexcept(StateSaver<decltype(va)>{va}.~StateSaver()), "");
@@ -43,6 +136,14 @@ TEST_CASE("compilation") {
   A& ra = va;
   static_assert(noexcept(StateSaver<decltype(ra)>{ra}), "");
   static_assert(noexcept(StateSaver<decltype(ra)>{ra}.~StateSaver()), "");
+
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
+  static_assert(noexcept(StateSaver{va}), "");
+  static_assert(noexcept(StateSaver{va}.~StateSaver()), "");
+
+  static_assert(noexcept(StateSaver{ra}), "");
+  static_assert(noexcept(StateSaver{ra}.~StateSaver()), "");
+#endif
 }
 
 TEST_CASE("called on scope leave") {
