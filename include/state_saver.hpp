@@ -74,7 +74,7 @@ class StateSaver final {
   }
 
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  void Restore(bool force) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
+  void Restore(bool force = true) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
     if (restore_ || force) {
       previous_ref_ = previous_value_;
     }
