@@ -35,7 +35,7 @@
 
 using namespace state_saver;
 
-#include <exception>
+#include <stdexcept>
 
 #include "test_case.hpp"
 
@@ -232,14 +232,14 @@ TEST_CASE("called on scope leave") {
   }
 }
 
-TEST_CASE("called on exception") {
+TEST_CASE("called on runtime_error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       StateSaver<decltype(a)> state_saver{a};
       a.i = other_value;
       REQUIRE(a.i == other_value);
-      throw std::exception{};
+      throw std::runtime_error{"error"};
     };
 
     REQUIRE_THROWS([&]() {
@@ -254,7 +254,7 @@ TEST_CASE("called on exception") {
       STATE_SAVER(a);
       a.i = other_value;
       REQUIRE(a.i == other_value);
-      throw std::exception{};
+      throw std::runtime_error{"error"};
     };
 
     REQUIRE_THROWS([&]() {
@@ -269,7 +269,7 @@ TEST_CASE("called on exception") {
       MAKE_STATE_SAVER(state_saver, a);
       a.i = other_value;
       REQUIRE(a.i == other_value);
-      throw std::exception{};
+      throw std::runtime_error{"error"};
     };
 
     REQUIRE_THROWS([&]() {
@@ -311,7 +311,7 @@ TEST_CASE("dismiss before scope leave") {
   }
 }
 
-TEST_CASE("dismiss before exception") {
+TEST_CASE("dismiss before runtime_error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -319,7 +319,7 @@ TEST_CASE("dismiss before exception") {
       a.i = other_value;
       REQUIRE(a.i == other_value);
       state_saver.Dismiss();
-      throw std::exception{};
+      throw std::runtime_error{"error"};
     };
 
     REQUIRE_THROWS([&]() {
@@ -335,7 +335,7 @@ TEST_CASE("dismiss before exception") {
       a.i = other_value;
       REQUIRE(a.i == other_value);
       state_saver.Dismiss();
-      throw std::exception{};
+      throw std::runtime_error{"error"};
     };
 
     REQUIRE_THROWS([&]() {
@@ -345,14 +345,14 @@ TEST_CASE("dismiss before exception") {
   }
 }
 
-TEST_CASE("called on exception, dismiss after exception") {
+TEST_CASE("called on runtime_error, dismiss after runtime_error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
       StateSaver<decltype(a)> state_saver{a};
       a.i = other_value;
       REQUIRE(a.i == other_value);
-      throw std::exception{};
+      throw std::runtime_error{"error"};
       state_saver.Dismiss();
     };
 
@@ -368,7 +368,7 @@ TEST_CASE("called on exception, dismiss after exception") {
       MAKE_STATE_SAVER(state_saver, a);
       a.i = other_value;
       REQUIRE(a.i == other_value);
-      throw std::exception{};
+      throw std::runtime_error{"error"};
       state_saver.Dismiss();
     };
 

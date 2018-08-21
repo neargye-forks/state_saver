@@ -22,7 +22,7 @@
 // SOFTWARE.
 
 #include <utility>
-#include <exception>
+#include <stdexcept>
 
 struct A {
   int i = 0;
@@ -67,14 +67,14 @@ struct A {
 #elif defined(TEST_CASE_9)
   A(const A&) = default;
   A& operator=(const A&) noexcept(false) {
-    throw std::exception{"operator= throw."};
+    throw std::runtime_error{"operator= throw."};
   }
   A& operator=(A&&) = default;
 #elif defined(TEST_CASE_10)
   A(const A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) noexcept(false) {
-    throw std::exception{"operator= throw."};
+    throw std::runtime_error{"operator= throw."};
   }
 #endif
 };
