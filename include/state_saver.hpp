@@ -43,24 +43,24 @@ class StateSaver final {
                                                          std::is_nothrow_assignable<T&, T&>::value>;
 
   static_assert(!std::is_const<T>::value,
-                "StateSaver requirement not const type.");
+                "StateSaver require not const type.");
   static_assert(!std::is_rvalue_reference<U>::value &&
                     (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
-                "StateSaver requirement lvalue type.");
+                "StateSaver require lvalue type.");
   static_assert(!std::is_array<T>::value,
-                "StateSaver requirement not array type.");
+                "StateSaver require not array type.");
   static_assert(!std::is_pointer<T>::value,
-                "StateSaver requirement not pointer type.");
+                "StateSaver require not pointer type.");
   static_assert(!std::is_function<T>::value,
-                "StateSaver requirement not function type.");
+                "StateSaver require not function type.");
   static_assert(std::is_constructible<T, T&>::value,
-                "StateSaver requirement copy constructible.");
+                "StateSaver require copy constructible.");
   static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
-                "StateSaver requirement operator=.");
+                "StateSaver require operator=.");
 
 #if defined(STATE_SAVER_REQUIRE_NOEXCEPT)
   static_assert(IsNothrowAssignable::value,
-                "StateSaver requirement noexcept operator=.");
+                "StateSaver require noexcept operator=.");
 #endif
 
  public:
