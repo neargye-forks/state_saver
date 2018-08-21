@@ -24,6 +24,13 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
+#define REQUIRE_NOTHROW_IF(is_nothrow, ...) \
+  if (is_nothrow) {                         \
+    REQUIRE_NOTHROW(__VA_ARGS__);           \
+  } else {                                  \
+    REQUIRE_THROWS(__VA_ARGS__);            \
+  }
+
 #include <state_saver.hpp>
 
 using namespace state_saver;
@@ -34,6 +41,8 @@ using namespace state_saver;
 
 constexpr int value = -1;
 constexpr int other_value = 1;
+
+static const bool IsNothrowCopyAssignable = std::is_nothrow_assignable<A&, A&>::value;
 
 TEST_CASE("compilation") {
 #if defined(TEST_CASE_1)
@@ -382,7 +391,7 @@ TEST_CASE("restore") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
@@ -399,7 +408,7 @@ TEST_CASE("restore") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
@@ -418,7 +427,7 @@ TEST_CASE("restore force") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
@@ -435,7 +444,7 @@ TEST_CASE("restore force") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == value);
@@ -491,7 +500,7 @@ TEST_CASE("dismiss, restore force") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == other_value);
@@ -509,7 +518,7 @@ TEST_CASE("dismiss, restore force") {
       a.i = other_value;
     };
 
-    REQUIRE_NOTHROW([&]() {
+    REQUIRE_NOTHROW_IF(IsNothrowCopyAssignable, [&]() {
       SomeFunction(a);
     }());
     REQUIRE(a.i == other_value);

@@ -38,6 +38,10 @@ template <typename U>
 class StateSaver final {
   using T = typename std::remove_reference<U>::type;
 
+  using IsNothrowAssignable = std::integral_constant<bool,
+                                                     std::is_nothrow_assignable<T&, T>::value ||
+                                                         std::is_nothrow_assignable<T&, T&>::value>;
+
   static_assert(!std::is_const<T>::value,
                 "StateSaver requirement not const type.");
   static_assert(!std::is_rvalue_reference<U>::value &&
@@ -53,6 +57,11 @@ class StateSaver final {
                 "StateSaver requirement copy constructible.");
   static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
                 "StateSaver requirement operator=.");
+
+#if defined(STATE_SAVER_REQUIRE_NOEXCEPT)
+  static_assert(IsNothrowAssignable::value,
+                "StateSaver requirement noexcept operator=.");
+#endif
 
  public:
   StateSaver() = delete;
@@ -80,8 +89,7 @@ class StateSaver final {
     }
   }
 
-  ~StateSaver() noexcept(std::is_nothrow_assignable<T&, T>::value ||
-                         std::is_nothrow_assignable<T&, T&>::value) {
+  ~StateSaver() noexcept(IsNothrowAssignable::value) {
     using AssignableType = typename std::conditional<
         std::is_nothrow_assignable<T&, T>::value ||
             !std::is_assignable<T&, T&>::value ||

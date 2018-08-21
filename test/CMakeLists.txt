@@ -2,7 +2,14 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 FOREACH(I RANGE 1 10)
-    add_executable(${PROJECT_NAME}_test_case_${I} test.cpp)
-    add_test(NAME ${PROJECT_NAME}_test_case_${I} COMMAND ${PROJECT_NAME}_test_case_${I})
-    target_compile_definitions(${PROJECT_NAME}_test_case_${I} PUBLIC TEST_CASE_${I})
+    set(name_test ${PROJECT_NAME}_test_case_${I})
+    add_executable(${name_test} test.cpp)
+    add_test(NAME ${name_test} COMMAND ${name_test})
+    target_compile_definitions(${name_test} PUBLIC TEST_CASE_${I})
+
+    set(name_test_nothrow ${PROJECT_NAME}_test_case_${I}_nothrow)
+    add_executable(${name_test_nothrow} test.cpp)
+    add_test(NAME ${name_test_nothrow} COMMAND ${name_test_nothrow})
+    target_compile_definitions(${name_test_nothrow} PUBLIC TEST_CASE_${I})
+    target_compile_definitions(${name_test_nothrow} PUBLIC STATE_SAVER_REQUIRE_NOEXCEPT)
 ENDFOREACH()
