@@ -26,44 +26,88 @@
 #include <iostream>
 
 void Foo1(int& a) {
-  STATE_SAVER(a);
-  a = 100;
+  STATE_SAVER(a); // State saver.
+
+  a = 1;
   std::cout << "Foo1::a = " << a << std::endl;
 }
 
-void Foo3(int& a) {
-  using namespace state_saver;
+void Foo2(int& a) {
+  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
 
+  a = 2;
+  std::cout << "Foo2::a = " << a << std::endl;
+}
+
+void Foo3(int& a) {
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  StateSaver state_saver{a};
+  state_saver::StateSaver state_saver{a}; // Custom state saver.
 #else
-  StateSaver<decltype(a)> state_saver{a}; // or StateSaver<int> state_saver{a};
+  state_saver::StateSaver<decltype(a)> state_saver{a}; // Custom state saver.
 #endif
 
-  a = 100;
+  a = 3;
   std::cout << "Foo3::a = " << a << std::endl;
 }
 
+void Foo4(int& a) {
+  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+
+  a = 4;
+  std::cout << "Foo4::a = " << a << std::endl;
+
+  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "Dismiss" << std::endl;
+}
+
+void Foo5(int& a) {
+  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+
+  a = 5;
+  std::cout << "Foo5::a = " << a << std::endl;
+
+  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "Dismiss" << std::endl;
+
+  state_saver.Restore(/*force:*/ true); // Restore force state.
+  std::cout << "Force restore" << std::endl;
+  std::cout << "Foo5::a = " << a << std::endl;
+}
+
+void Foo6(int& a) {
+  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+
+  a = 6;
+  std::cout << "Foo6::a = " << a << std::endl;
+
+  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "Dismiss" << std::endl;
+
+  state_saver.Restore(/*force:*/ false); // Restore state if not dismiss.
+  std::cout << "Restore" << std::endl;
+  std::cout << "Foo6::a = " << a << std::endl;
+}
+
 int main() {
-  int a = 1;
+  int a = 0;
   std::cout << "main::a = " << a << std::endl;
 
   Foo1(a);
   std::cout << "main::a = " << a << std::endl;
 
-  auto Foo2 = [&]() {
-    MAKE_STATE_SAVER(state_saver, a);
-    a = 100;
-    std::cout << "Foo2::a = " << a << std::endl;
-    state_saver.Restore(/*restore_force =*/ true);
-    std::cout << "Foo2::a = " << a << std::endl;
-    a = 101;
-    state_saver.Dismiss();
-  };
-  Foo2();
+  Foo2(a);
   std::cout << "main::a = " << a << std::endl;
 
   Foo3(a);
+  std::cout << "main::a = " << a << std::endl;
+
+  Foo4(a);
+  std::cout << "main::a = " << a << std::endl;
+
+  Foo5(a);
+  std::cout << "main::a = " << a << std::endl;
+
+  Foo6(a);
   std::cout << "main::a = " << a << std::endl;
 
   return 0;
