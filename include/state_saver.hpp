@@ -116,20 +116,20 @@ StateSaver(T&) -> StateSaver<T>;
 
 // ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
 #if !defined(ATTR_MAYBE_UNUSED)
-#  if defined(_MSC_VER)
-#    if (_MSC_VER >= 1911 && defined(_MSVC_LANG) &&_MSVC_LANG >= 201703L)
-#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
-#    else
-#      define ATTR_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
-#    endif
-#  elif defined(__clang__)
+#  if defined(__clang__)
 #    if ((__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 9)) && __cplusplus >= 201703L)
 #      define ATTR_MAYBE_UNUSED [[maybe_unused]]
 #    else
 #      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
 #    endif
+#  elif defined(_MSC_VER)
+#    if (_MSC_VER >= 1911 && defined(_MSVC_LANG) &&_MSVC_LANG >= 201703L)
+#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
+#    else
+#      define ATTR_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
+#    endif
 #  elif defined(__GNUC__)
-#    if (__GNUC__ > 7 && __cplusplus >= 201703L)
+#    if (__GNUC__ >= 7 && __cplusplus >= 201703L)
 #      define ATTR_MAYBE_UNUSED [[maybe_unused]]
 #    else
 #      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
