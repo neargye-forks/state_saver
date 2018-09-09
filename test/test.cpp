@@ -42,7 +42,7 @@ using namespace state_saver;
 constexpr int value = -1;
 constexpr int other_value = 1;
 
-static const bool IsNothrowCopyAssignable = std::is_nothrow_assignable<A&, A&>::value;
+static constexpr bool IsNothrowCopyAssignable = std::is_nothrow_assignable<A&, A&>::value;
 
 TEST_CASE("compilation") {
 #if defined(TEST_CASE_1)
@@ -232,7 +232,7 @@ TEST_CASE("called on scope leave") {
   }
 }
 
-TEST_CASE("called on runtime_error") {
+TEST_CASE("called on error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -311,7 +311,7 @@ TEST_CASE("dismiss before scope leave") {
   }
 }
 
-TEST_CASE("dismiss before runtime_error") {
+TEST_CASE("dismiss before error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
@@ -345,7 +345,7 @@ TEST_CASE("dismiss before runtime_error") {
   }
 }
 
-TEST_CASE("called on runtime_error, dismiss after runtime_error") {
+TEST_CASE("called on error, dismiss after error") {
   SECTION("StateSaver") {
     A a{value};
     const auto SomeFunction = [](A& a) {
