@@ -5,10 +5,11 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// vesion 0.2.5
+// vesion 0.3.0-rc
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
-// Copyright (c) 2018 Daniil Goncharov <neargye@gmail.com>.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2018 - 2019 Daniil Goncharov <neargye@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -32,74 +33,132 @@
 
 #include <type_traits>
 
-namespace state_saver {
+// state_saver throwable settings:
+// STATE_SAVER_MAY_EXCEPTIONS
+// STATE_SAVER_NO_EXCEPTIONS
+// STATE_SAVER_SUPPRESS_EXCEPTIONS
+
+// state_saver assignable settings:
+// STATE_SAVER_FORCE_MOVE_ASSIGNABLE
+// STATE_SAVER_FORCE_COPY_ASSIGNABLE
+
+#if !defined(STATE_SAVER_MAY_EXCEPTIONS) || !defined(STATE_SAVER_NO_EXCEPTIONS) || !defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#  define STATE_SAVER_MAY_EXCEPTIONS
+#elif defined(STATE_SAVER_MAY_EXCEPTIONS) && defined(STATE_SAVER_NO_EXCEPTIONS)
+#  error only one of STATE_SAVER_MAY_EXCEPTIONS and STATE_SAVER_NO_EXCEPTIONS may be defined.
+#elif defined(STATE_SAVER_MAY_EXCEPTIONS) && defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#  error only one of STATE_SAVER_MAY_EXCEPTIONS and STATE_SAVER_SUPPRESS_EXCEPTIONS may be defined.
+#elif defined(STATE_SAVER_NO_EXCEPTIONS) && defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#  error only one of STATE_SAVER_NO_EXCEPTIONS and STATE_SAVER_SUPPRESS_EXCEPTIONS may be defined.
+#endif
+
+#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE) && defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
+#  error only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
+#endif
+
+namespace yal {
 
 template <typename U>
-class StateSaver final {
+class state_saver final {
   using T = typename std::remove_reference<U>::type;
 
-  using IsNothrowAssignable = std::integral_constant<bool,
-                                                     std::is_nothrow_assignable<T&, T>::value ||
-                                                         std::is_nothrow_assignable<T&, T&>::value>;
+  using is_nothrow_assignable = std::integral_constant<bool, std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value>;
+
+#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
+  using assignable_t = T&&;
+#elif defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
+  using assignable_t = T&;
+#else
+  using assignable_t = typename std::conditional<
+      std::is_nothrow_assignable<T&, T>::value ||
+          !std::is_assignable<T&, T&>::value ||
+          (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
+      T&&, T&>::type;
+#endif
 
   static_assert(!std::is_const<T>::value,
-                "StateSaver require not const type.");
-  static_assert(!std::is_rvalue_reference<U>::value &&
-                    (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
-                "StateSaver require lvalue type.");
+                "state_saver require not const type.");
+  static_assert(!std::is_rvalue_reference<U>::value && (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
+                "state_saver require lvalue type.");
   static_assert(!std::is_array<T>::value,
-                "StateSaver require not array type.");
+                "state_saver require not array type.");
   static_assert(!std::is_pointer<T>::value,
-                "StateSaver require not pointer type.");
+                "state_saver require not pointer type.");
   static_assert(!std::is_function<T>::value,
-                "StateSaver require not function type.");
+                "state_saver require not function type.");
   static_assert(std::is_constructible<T, T&>::value,
-                "StateSaver require copy constructible.");
+                "state_saver require copy constructible.");
   static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
-                "StateSaver require operator=.");
+                "state_saver require operator=.");
 
-#if defined(STATE_SAVER_REQUIRE_NOEXCEPT) && STATE_SAVER_REQUIRE_NOEXCEPT
-  static_assert(IsNothrowAssignable::value,
-                "StateSaver require noexcept operator=.");
+#if STATE_SAVER_REQUIRE == STATE_SAVER_NO_EXCEPTIONS
+  static_assert(is_nothrow_assignable::value,
+                "state_saver require noexcept operator=.");
 #endif
 
  public:
-  StateSaver() = delete;
-  StateSaver(const StateSaver&) = delete;
-  StateSaver(StateSaver&&) = delete;
-  StateSaver& operator=(const StateSaver&) = delete;
-  StateSaver& operator=(StateSaver&&) = delete;
+  state_saver() = delete;
+  state_saver(const state_saver&) = delete;
+  state_saver(state_saver&&) = delete;
+  state_saver& operator=(const state_saver&) = delete;
+  state_saver& operator=(state_saver&&) = delete;
 
-  StateSaver(T&&) = delete;
-  StateSaver(const T&) = delete;
+  state_saver(T&&) = delete;
+  state_saver(const T&) = delete;
 
-  explicit StateSaver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
+  explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
       : restore_(true),
         previous_ref_(object),
         previous_value_(object) {}
 
-  void Dismiss() noexcept {
+  void dismiss() noexcept {
     restore_ = false;
   }
 
+#if defined(STATE_SAVER_MAY_EXCEPTIONS)
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  void Restore(bool force = true) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
+  void restore(bool force = true) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
     if (restore_ || force) {
       previous_ref_ = previous_value_;
     }
   }
 
-  ~StateSaver() noexcept(IsNothrowAssignable::value) {
-    using AssignableType = typename std::conditional<
-        std::is_nothrow_assignable<T&, T>::value ||
-            !std::is_assignable<T&, T&>::value ||
-            (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
-        T&&, T&>::type;
-
+  ~state_saver() noexcept(is_nothrow_assignable::value) {
     if (restore_) {
-      previous_ref_ = static_cast<AssignableType>(previous_value_);
+      previous_ref_ = static_cast<assignable_t>(previous_value_);
     }
   }
+#elif defined(STATE_SAVER_NO_EXCEPTIONS)
+  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
+  void restore(bool force = true) noexcept {
+    if (restore_ || force) {
+      previous_ref_ = previous_value_;
+    }
+  }
+
+  ~state_saver() noexcept {
+    if (restore_) {
+      previous_ref_ = static_cast<assignable_t>(previous_value_);
+    }
+  }
+#elif defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
+  void restore(bool force = true) noexcept {
+    if (restore_ || force) {
+      try {
+        previous_ref_ = previous_value_;
+      } catch (...) {}
+    }
+  }
+
+  ~state_saver() noexcept {
+    if (restore_) {
+      try {
+        previous_ref_ = static_cast<assignable_t>(previous_value_);
+      } catch (...) {}
+    }
+  }
+#endif
 
  private:
   bool restore_;
@@ -109,10 +168,10 @@ class StateSaver final {
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
 template <typename T>
-StateSaver(T&) -> StateSaver<T>;
+state_saver(T&) -> state_saver<T>;
 #endif
 
-} // namespace state_saver
+} // namespace yal
 
 // ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
 #if !defined(ATTR_MAYBE_UNUSED)
@@ -148,7 +207,7 @@ StateSaver(T&) -> StateSaver<T>;
 #endif
 
 #define MAKE_STATE_SAVER(name, x) \
-  ::state_saver::StateSaver<decltype(x)> (name){x};
+  ::yal::state_saver<decltype(x)> (name){x};
 
 #if defined(__COUNTER__)
 #  define STATE_SAVER(x)    \

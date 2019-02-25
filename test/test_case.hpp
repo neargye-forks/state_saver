@@ -1,7 +1,8 @@
 // state_saver test_case
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
-// Copyright (c) 2018 Daniil Goncharov <neargye@gmail.com>.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2018 - 2019 Daniil Goncharov <neargye@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -67,14 +68,14 @@ struct A {
 #elif defined(TEST_CASE_9)
   A(const A&) = default;
   A& operator=(const A&) noexcept(false) {
-    throw std::runtime_error{"operator= throw."};
+    throw std::runtime_error{"operator=(const A&) throw."};
   }
   A& operator=(A&&) = default;
 #elif defined(TEST_CASE_10)
   A(const A&) = default;
   A& operator=(const A&) = default;
   A& operator=(A&&) noexcept(false) {
-    throw std::runtime_error{"operator= throw."};
+    throw std::runtime_error{"operator=(A&&) throw."};
   }
 #endif
 };

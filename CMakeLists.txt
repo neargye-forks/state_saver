@@ -1,23 +1,25 @@
-﻿cmake_minimum_required(VERSION 3.2)
-include(CheckCXXCompilerFlag)
-project(state_saver)
+﻿cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+include(GNUInstallDirs)
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-    add_compile_options(-Wall -Wextra -pedantic-errors)
-    set(CMAKE_VERBOSE_MAKEFILE ON)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    add_compile_options(/W4)
-    check_cxx_compiler_flag(/permissive HAS_PERMISSIVE_FLAG)
-    if(HAS_PERMISSIVE_FLAG)
-        add_compile_options(/permissive-)
-    endif()
+project(state_saver LANGUAGES CXX)
+set(${PROJECT_NAME}_version "0.3.0")
+set(package_name ${PROJECT_NAME})
+set(include_source_dir "${CMAKE_SOURCE_DIR}/include")
+
+option(STATE_SAVER_OPT_BUILD_EXAMPLES "Build state_saver examples" ON)
+option(STATE_SAVER_OPT_BUILD_TESTS "Build and perform state_saver tests" ON)
+
+add_library(${package_name} INTERFACE)
+target_include_directories(${package_name} INTERFACE "$<BUILD_INTERFACE:${include_source_dir}>")
+
+if(STATE_SAVER_OPT_BUILD_EXAMPLES)
+    add_subdirectory(example)
 endif()
 
-add_subdirectory(example)
+if(STATE_SAVER_OPT_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
 
-enable_testing()
-add_subdirectory(test)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -1,7 +1,8 @@
 // state_saver example
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
-// Copyright (c) 2018 Daniil Goncharov <neargye@gmail.com>.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2018 - 2019 Daniil Goncharov <neargye@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -25,90 +26,90 @@
 
 #include <iostream>
 
-void Foo1(int& a) {
+void foo1(int& a) {
   STATE_SAVER(a); // State saver.
 
   a = 1;
-  std::cout << "Foo1::a = " << a << std::endl;
+  std::cout << "foo1 a = " << a << std::endl;
 }
 
-void Foo2(int& a) {
+void foo2(int& a) {
   MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
 
   a = 2;
-  std::cout << "Foo2::a = " << a << std::endl;
+  std::cout << "foo2 a = " << a << std::endl;
 }
 
-void Foo3(int& a) {
+void foo3(int& a) {
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  state_saver::StateSaver state_saver{a}; // Custom state saver.
+  yal::StateSaver state_saver{a}; // Custom state saver.
 #else
-  state_saver::StateSaver<decltype(a)> state_saver{a}; // Custom state saver.
+  yal::state_saver<decltype(a)> state_saver{a}; // Custom state saver.
 #endif
 
   a = 3;
-  std::cout << "Foo3::a = " << a << std::endl;
+  std::cout << "foo3 a = " << a << std::endl;
 }
 
-void Foo4(int& a) {
+void foo4(int& a) {
   MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
 
   a = 4;
-  std::cout << "Foo4::a = " << a << std::endl;
+  std::cout << "foo4 a = " << a << std::endl;
 
-  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "Dismiss" << std::endl;
+  state_saver.dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "foo4 dismiss restore" << std::endl;
 }
 
-void Foo5(int& a) {
+void foo5(int& a) {
   MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
 
   a = 5;
-  std::cout << "Foo5::a = " << a << std::endl;
+  std::cout << "foo5 a = " << a << std::endl;
 
-  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "Dismiss" << std::endl;
+  state_saver.dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "foo5 dismiss restore" << std::endl;
 
-  state_saver.Restore(/*force:*/ true); // Restore force state.
-  std::cout << "Force restore" << std::endl;
-  std::cout << "Foo5::a = " << a << std::endl;
+  state_saver.restore(/*force:*/ true); // Restore force state.
+  std::cout << "foo5 force restore" << std::endl;
+  std::cout << "foo5 a = " << a << std::endl;
 }
 
-void Foo6(int& a) {
+void foo6(int& a) {
   MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
 
   a = 6;
-  std::cout << "Foo6::a = " << a << std::endl;
+  std::cout << "foo6 a = " << a << std::endl;
 
-  state_saver.Dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "Dismiss" << std::endl;
+  state_saver.dismiss(); // Dismiss, state will not automatically restored.
+  std::cout << "foo6 dismiss restore" << std::endl;
 
-  state_saver.Restore(/*force:*/ false); // Restore state if not dismiss.
-  std::cout << "Restore" << std::endl;
-  std::cout << "Foo6::a = " << a << std::endl;
+  state_saver.restore(/*force:*/ false); // Restore state if not dismiss.
+  std::cout << "foo6 restore" << std::endl;
+  std::cout << "foo6 a = " << a << std::endl;
 }
 
 int main() {
   int a = 0;
-  std::cout << "main::a = " << a << std::endl;
+  std::cout << "main a = " << a << std::endl;
 
-  Foo1(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo1(a);
+  std::cout << "main a = " << a << std::endl;
 
-  Foo2(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo2(a);
+  std::cout << "main a = " << a << std::endl;
 
-  Foo3(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo3(a);
+  std::cout << "main a = " << a << std::endl;
 
-  Foo4(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo4(a);
+  std::cout << "main a = " << a << std::endl;
 
-  Foo5(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo5(a);
+  std::cout << "main a = " << a << std::endl;
 
-  Foo6(a);
-  std::cout << "main::a = " << a << std::endl;
+  foo6(a);
+  std::cout << "main a = " << a << std::endl;
 
   return 0;
 }
