@@ -42,7 +42,7 @@ void foo2(int& a) {
 
 void foo3(int& a) {
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  yal::StateSaver state_saver{a}; // Custom state saver.
+  yal::state_saver state_saver{a}; // Custom state saver.
 #else
   yal::state_saver<decltype(a)> state_saver{a}; // Custom state saver.
 #endif
