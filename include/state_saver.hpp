@@ -134,8 +134,6 @@ class state_saver final {
   static_assert(std::is_constructible<T, T&>::value,
                 "state_saver require copy constructible.");
 
-  using is_nothrow_assignable = std::integral_constant<bool, std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value>;
-
 #if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
   static_assert(std::is_assignable<T&, T>::value,
                 "state_saver require move operator=.");
@@ -156,7 +154,7 @@ class state_saver final {
   static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
                 "state_saver require operator=.");
 #  if defined(STATE_SAVER_NO_EXCEPTIONS)
-  static_assert(is_nothrow_assignable::value,
+  static_assert(std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value,
                 "state_saver require noexcept operator=.");
 #  endif
   using assignable_t = typename std::conditional<
@@ -193,7 +191,7 @@ class state_saver final {
     }
   }
 
-  ~state_saver() noexcept(is_nothrow_assignable::value) {
+  ~state_saver() noexcept(std::is_nothrow_assignable<T&, assignable_t>::value) {
     if (policy_.should_restore()) {
       previous_ref_ = static_cast<assignable_t>(previous_value_);
     }
@@ -240,7 +238,7 @@ template <typename U>
 using state_saver_exit = state_saver<U, on_exit_policy>;
 
 template <typename U>
-using state_saver_fail = state_saver<T, on_fail_policy>;
+using state_saver_fail = state_saver<U, on_fail_policy>;
 
 template <typename U>
 using state_saver_succes = state_saver<U, on_success_policy>;
