@@ -207,7 +207,7 @@ state_saver(T&) -> state_saver<T>;
 #endif
 
 #define MAKE_STATE_SAVER(name, x) \
-  ::yal::state_saver<decltype(x)> (name){x};
+  ::yal::state_saver<decltype(x)> name{x};
 
 #if defined(__COUNTER__)
 #  define STATE_SAVER(x)    \
