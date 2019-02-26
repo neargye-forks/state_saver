@@ -27,32 +27,28 @@
 #include <iostream>
 
 void foo1(int& a) {
-  STATE_SAVER(a); // State saver.
+  STATE_SAVER_EXIT(a); // State saver.
 
   a = 1;
   std::cout << "foo1 a = " << a << std::endl;
 }
 
 void foo2(int& a) {
-  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+  MAKE_STATE_SAVER_EXIT(state_saver, a); // Custom state saver.
 
   a = 2;
   std::cout << "foo2 a = " << a << std::endl;
 }
 
 void foo3(int& a) {
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  yal::state_saver state_saver{a}; // Custom state saver.
-#else
-  yal::state_saver<decltype(a)> state_saver{a}; // Custom state saver.
-#endif
+  yal::state_saver_exit<decltype(a)> state_saver{a}; // Custom state saver.
 
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;
 }
 
 void foo4(int& a) {
-  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+  MAKE_STATE_SAVER_EXIT(state_saver, a); // Custom state saver.
 
   a = 4;
   std::cout << "foo4 a = " << a << std::endl;
@@ -62,7 +58,7 @@ void foo4(int& a) {
 }
 
 void foo5(int& a) {
-  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+  MAKE_STATE_SAVER_EXIT(state_saver, a); // Custom state saver.
 
   a = 5;
   std::cout << "foo5 a = " << a << std::endl;
@@ -76,7 +72,7 @@ void foo5(int& a) {
 }
 
 void foo6(int& a) {
-  MAKE_STATE_SAVER(state_saver, a); // Custom state saver.
+  MAKE_STATE_SAVER_EXIT(state_saver, a); // Custom state saver.
 
   a = 6;
   std::cout << "foo6 a = " << a << std::endl;

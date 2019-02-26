@@ -213,27 +213,19 @@ TEST_CASE("Static test " CASE_NAME) {
 #endif
 
   test_class va;
-  static_assert(noexcept(state_saver<decltype(va)>{va}), "");
-  static_assert(noexcept(state_saver<decltype(va)>{va}.~state_saver()), "");
+  static_assert(noexcept(state_saver_exit<decltype(va)>{va}), "");
+  static_assert(noexcept(state_saver_exit<decltype(va)>{va}.~state_saver()), "");
 
   test_class& ra = va;
-  static_assert(noexcept(state_saver<decltype(ra)>{ra}), "");
-  static_assert(noexcept(state_saver<decltype(ra)>{ra}.~state_saver()), "");
-
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  static_assert(noexcept(state_saver{va}), "");
-  static_assert(noexcept(state_saver{va}.~state_saver()), "");
-
-  static_assert(noexcept(state_saver{ra}), "");
-  static_assert(noexcept(state_saver{ra}.~state_saver()), "");
-#endif
+  static_assert(noexcept(state_saver_exit<decltype(ra)>{ra}), "");
+  static_assert(noexcept(state_saver_exit<decltype(ra)>{ra}.~state_saver()), "");
 }
 
 TEST_CASE("Called on scope leave " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -244,7 +236,7 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
     REQUIRE(a.i == test_value);
 
     const auto SomeLambda = [&]() {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -255,10 +247,10 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("STATE_SAVER") {
+  SECTION("STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      STATE_SAVER(a);
+      STATE_SAVER_EXIT(a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -269,7 +261,7 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
     REQUIRE(a.i == test_value);
 
     const auto SomeLambda = [&]() {
-      STATE_SAVER(a);
+      STATE_SAVER_EXIT(a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -280,10 +272,10 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -294,7 +286,7 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
     REQUIRE(a.i == test_value);
 
     const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
     };
@@ -307,10 +299,10 @@ TEST_CASE("Called on scope leave " CASE_NAME) {
 }
 
 TEST_CASE("Called on error " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
       throw std::runtime_error{"error"};
@@ -322,10 +314,10 @@ TEST_CASE("Called on error " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("STATE_SAVER") {
+  SECTION("STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      STATE_SAVER(a);
+      STATE_SAVER_EXIT(a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
       throw std::runtime_error{"error"};
@@ -337,10 +329,10 @@ TEST_CASE("Called on error " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
       throw std::runtime_error{"error"};
@@ -354,13 +346,13 @@ TEST_CASE("Called on error " CASE_NAME) {
 }
 
 TEST_CASE("Dismiss before scope leave " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
     };
 
     REQUIRE_NOTHROW([&]() {
@@ -369,13 +361,13 @@ TEST_CASE("Dismiss before scope leave " CASE_NAME) {
     REQUIRE(a.i == other_test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
     };
 
     REQUIRE_NOTHROW([&]() {
@@ -386,13 +378,13 @@ TEST_CASE("Dismiss before scope leave " CASE_NAME) {
 }
 
 TEST_CASE("Dismiss before error " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
       throw std::runtime_error{"error"};
     };
 
@@ -402,13 +394,13 @@ TEST_CASE("Dismiss before error " CASE_NAME) {
     REQUIRE(a.i == other_test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
       throw std::runtime_error{"error"};
     };
 
@@ -420,14 +412,14 @@ TEST_CASE("Dismiss before error " CASE_NAME) {
 }
 
 TEST_CASE("Called on error, dismiss after error " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
       throw std::runtime_error{"error"};
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
     };
 
     REQUIRE_THROWS([&]() {
@@ -436,14 +428,14 @@ TEST_CASE("Called on error, dismiss after error " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
       throw std::runtime_error{"error"};
-      state_saver.dismiss();
+      state_saver_exit.dismiss();
     };
 
     REQUIRE_THROWS([&]() {
@@ -454,13 +446,13 @@ TEST_CASE("Called on error, dismiss after error " CASE_NAME) {
 }
 
 TEST_CASE("Restore " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.restore(false);
+      state_saver_exit.restore(false);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };
@@ -471,13 +463,13 @@ TEST_CASE("Restore " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.restore(false);
+      state_saver_exit.restore(false);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };
@@ -490,13 +482,13 @@ TEST_CASE("Restore " CASE_NAME) {
 }
 
 TEST_CASE("Restore force " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.restore(true);
+      state_saver_exit.restore(true);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };
@@ -507,13 +499,13 @@ TEST_CASE("Restore force " CASE_NAME) {
     REQUIRE(a.i == test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.restore(true);
+      state_saver_exit.restore(true);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };
@@ -526,14 +518,14 @@ TEST_CASE("Restore force " CASE_NAME) {
 }
 
 TEST_CASE("Dismiss, restore " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
-      state_saver.restore(false);
+      state_saver_exit.dismiss();
+      state_saver_exit.restore(false);
       REQUIRE(a.i == other_test_value);
     };
 
@@ -543,14 +535,14 @@ TEST_CASE("Dismiss, restore " CASE_NAME) {
     REQUIRE(a.i == other_test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
-      state_saver.restore(false);
+      state_saver_exit.dismiss();
+      state_saver_exit.restore(false);
       REQUIRE(a.i == other_test_value);
     };
 
@@ -562,14 +554,14 @@ TEST_CASE("Dismiss, restore " CASE_NAME) {
 }
 
 TEST_CASE("Dismiss, restore force " CASE_NAME) {
-  SECTION("state_saver") {
+  SECTION("state_saver_exit") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      state_saver<decltype(a)> state_saver{a};
+      state_saver_exit<decltype(a)> state_saver_exit{a};
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
-      state_saver.restore(true);
+      state_saver_exit.dismiss();
+      state_saver_exit.restore(true);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };
@@ -580,14 +572,14 @@ TEST_CASE("Dismiss, restore force " CASE_NAME) {
     REQUIRE(a.i == other_test_value);
   }
 
-  SECTION("MAKE_STATE_SAVER") {
+  SECTION("MAKE_STATE_SAVER_EXIT") {
     test_class a{test_value};
     const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER(state_saver, a);
+      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
       a.i = other_test_value;
       REQUIRE(a.i == other_test_value);
-      state_saver.dismiss();
-      state_saver.restore(true);
+      state_saver_exit.dismiss();
+      state_saver_exit.restore(true);
       REQUIRE(a.i == test_value);
       a.i = other_test_value;
     };

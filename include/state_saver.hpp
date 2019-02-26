@@ -32,6 +32,9 @@
 #pragma once
 
 #include <type_traits>
+#if (defined(_MSC_VER) && _MSC_VER >= 1900) || ((defined(__clang__) || defined(__GNUC__)) && __cplusplus >= 201700L)
+#include <exception>
+#endif
 
 // state_saver throwable settings:
 // STATE_SAVER_MAY_EXCEPTIONS
@@ -58,7 +61,67 @@
 
 namespace yal {
 
-template <typename U>
+namespace details {
+#if !defined(YAL_DETAILS_UNCAUGHT_EXCEPTIONS)
+#  if defined(_MSC_VER) && _MSC_VER < 1900
+inline int uncaught_exceptions() noexcept {
+  return *(reinterpret_cast<int*>(static_cast<char*>(static_cast<void*>(_getptd())) + (sizeof(void*) == 8 ? 0x100 : 0x90)));
+}
+#  elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
+struct __cxa_eh_globals;
+extern "C" __cxa_eh_globals* __cxa_get_globals() noexcept;
+inline int uncaught_exceptions() noexcept {
+  return *(reinterpret_cast<unsigned int*>(static_cast<char*>(static_cast<void*>(__cxa_get_globals())) + sizeof(void*)));
+}
+#  else
+inline int uncaught_exceptions() noexcept {
+  return std::uncaught_exceptions();
+}
+#  endif
+#define YAL_DETAILS_UNCAUGHT_EXCEPTIONS
+#endif
+} // namespace details
+
+class on_exit_policy final {
+  bool restore_{true};
+
+ public:
+  void dismiss() noexcept {
+    restore_ = false;
+  }
+
+  bool should_restore() const noexcept {
+    return restore_;
+  }
+};
+
+class on_fail_policy final {
+  int ec_{details::uncaught_exceptions()};
+
+ public:
+  void dismiss() noexcept {
+    ec_ = -1;
+  }
+
+  bool should_restore() const noexcept {
+    return ec_ != -1 && ec_ < details::uncaught_exceptions();
+  }
+};
+
+class on_success_policy final {
+  int ec_{details::uncaught_exceptions()};
+
+ public:
+  void dismiss() noexcept {
+    ec_ = -1;
+  }
+
+  bool should_restore() const noexcept {
+    return ec_ != -1 && ec_ >= details::uncaught_exceptions();
+  }
+};
+
+template <typename U, typename P>
 class state_saver final {
   using T = typename std::remove_reference<U>::type;
 
@@ -118,44 +181,44 @@ class state_saver final {
   state_saver(const T&) = delete;
 
   explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : restore_(true),
+      : policy_(),
         previous_ref_(object),
         previous_value_(object) {}
 
   void dismiss() noexcept {
-    restore_ = false;
+    policy_.dismiss();
   }
 
 #if defined(STATE_SAVER_MAY_EXCEPTIONS)
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
   void restore(bool force = true) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
-    if (restore_ || force) {
+    if (policy_.should_restore() || force) {
       previous_ref_ = previous_value_;
     }
   }
 
   ~state_saver() noexcept(is_nothrow_assignable::value) {
-    if (restore_) {
+    if (policy_.should_restore()) {
       previous_ref_ = static_cast<assignable_t>(previous_value_);
     }
   }
 #elif defined(STATE_SAVER_NO_EXCEPTIONS)
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
   void restore(bool force = true) noexcept {
-    if (restore_ || force) {
+    if (policy_.should_restore() || force) {
       previous_ref_ = previous_value_;
     }
   }
 
   ~state_saver() noexcept {
-    if (restore_) {
+    if (policy_.should_restore()) {
       previous_ref_ = static_cast<assignable_t>(previous_value_);
     }
   }
 #elif defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
   void restore(bool force = true) noexcept {
-    if (restore_ || force) {
+    if (policy_.should_restore() || force) {
       try {
         previous_ref_ = previous_value_;
       } catch (...) {}
@@ -163,7 +226,7 @@ class state_saver final {
   }
 
   ~state_saver() noexcept {
-    if (restore_) {
+    if (policy_.should_restore()) {
       try {
         previous_ref_ = static_cast<assignable_t>(previous_value_);
       } catch (...) {}
@@ -172,15 +235,19 @@ class state_saver final {
 #endif
 
  private:
-  bool restore_;
+  P policy_;
   T& previous_ref_;
   T previous_value_;
 };
 
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-template <typename T>
-state_saver(T&) -> state_saver<T>;
-#endif
+template <typename U>
+using state_saver_exit = state_saver<U, on_exit_policy>;
+
+template <typename U>
+using state_saver_fail = state_saver<T, on_fail_policy>;
+
+template <typename U>
+using state_saver_succes = state_saver<U, on_success_policy>;
 
 } // namespace yal
 
@@ -212,15 +279,28 @@ state_saver(T&) -> state_saver<T>;
 #define STATE_SAVER_STR_CONCAT_(s1, s2) s1##s2
 #define STATE_SAVER_STR_CONCAT(s1, s2) STATE_SAVER_STR_CONCAT_(s1, s2)
 
-#define MAKE_STATE_SAVER(name, x) \
-  ::yal::state_saver<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_EXIT(name, x) ::yal::state_saver_exit<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_FAIL(name, x) ::yal::state_saver_fail<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_SUCCESS(name, x) ::yal::state_saver_succes<decltype(x)> name{x};
 
 #if defined(__COUNTER__)
-#  define STATE_SAVER(x)    \
-    ATTR_MAYBE_UNUSED const \
-    MAKE_STATE_SAVER(STATE_SAVER_STR_CONCAT(__state_saver__object_, __COUNTER__), x);
+#  define STATE_SAVER_EXIT(x) \
+    ATTR_MAYBE_UNUSED const   \
+    MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __COUNTER__), x);
+#  define STATE_SAVER_FAIL(x) \
+    ATTR_MAYBE_UNUSED const   \
+    MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __COUNTER__), x);
+#  define STATE_SAVER_SUCCESS(x) \
+    ATTR_MAYBE_UNUSED const      \
+    MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __COUNTER__), x);
 #elif defined(__LINE__)
-#  define STATE_SAVER(x)    \
-    ATTR_MAYBE_UNUSED const \
-    MAKE_STATE_SAVER(STATE_SAVER_STR_CONCAT(__state_saver__object_, __LINE__), x);
+#  define STATE_SAVER_EXIT(x) \
+    ATTR_MAYBE_UNUSED const   \
+    MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __LINE__), x);
+#  define STATE_SAVER_FAIL(x) \
+    ATTR_MAYBE_UNUSED const   \
+    MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __LINE__), x);
+#  define STATE_SAVER_SUCCESS(x) \
+    ATTR_MAYBE_UNUSED const      \
+    MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __LINE__), x);
 #endif
