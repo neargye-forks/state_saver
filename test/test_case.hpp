@@ -211,14 +211,6 @@ TEST_CASE("Static test " CASE_NAME) {
   static_assert(std::is_assignable<test_class&, test_class&>::value, "");
   static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
 #endif
-
-  test_class va;
-  static_assert(noexcept(state_saver_exit<decltype(va)>{va}), "");
-  static_assert(noexcept(state_saver_exit<decltype(va)>{va}.~state_saver()), "");
-
-  test_class& ra = va;
-  static_assert(noexcept(state_saver_exit<decltype(ra)>{ra}), "");
-  static_assert(noexcept(state_saver_exit<decltype(ra)>{ra}.~state_saver()), "");
 }
 
 TEST_CASE("Called on scope leave " CASE_NAME) {
