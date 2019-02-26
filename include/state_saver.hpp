@@ -62,20 +62,6 @@ template <typename U>
 class state_saver final {
   using T = typename std::remove_reference<U>::type;
 
-  using is_nothrow_assignable = std::integral_constant<bool, std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value>;
-
-#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
-  using assignable_t = T&&;
-#elif defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
-  using assignable_t = T&;
-#else
-  using assignable_t = typename std::conditional<
-      std::is_nothrow_assignable<T&, T>::value ||
-          !std::is_assignable<T&, T&>::value ||
-          (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
-      T&&, T&>::type;
-#endif
-
   static_assert(!std::is_const<T>::value,
                 "state_saver require not const type.");
   static_assert(!std::is_rvalue_reference<U>::value && (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
@@ -88,12 +74,37 @@ class state_saver final {
                 "state_saver require not function type.");
   static_assert(std::is_constructible<T, T&>::value,
                 "state_saver require copy constructible.");
+
+  using is_nothrow_assignable = std::integral_constant<bool, std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value>;
+
+#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
+  static_assert(std::is_assignable<T&, T>::value,
+                "state_saver require move operator=.");
+#  if defined(STATE_SAVER_NO_EXCEPTIONS)
+  static_assert(std::is_nothrow_assignable<T&, T>::value,
+                "state_saver require noexcept move operator=.");
+#  endif
+  using assignable_t = T&&;
+#elif defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
+  static_assert(std::is_assignable<T&, T&>::value,
+                "state_saver require copy operator=.");
+#  if defined(STATE_SAVER_NO_EXCEPTIONS)
+  static_assert(std::is_nothrow_assignable<T&, T&>::value,
+                "state_saver require noexcept copy operator=.");
+#  endif
+  using assignable_t = T&;
+#else
   static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
                 "state_saver require operator=.");
-
-#if STATE_SAVER_REQUIRE == STATE_SAVER_NO_EXCEPTIONS
+#  if defined(STATE_SAVER_NO_EXCEPTIONS)
   static_assert(is_nothrow_assignable::value,
                 "state_saver require noexcept operator=.");
+#  endif
+  using assignable_t = typename std::conditional<
+      std::is_nothrow_assignable<T&, T>::value ||
+          !std::is_assignable<T&, T&>::value ||
+          (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
+      T&&, T&>::type;
 #endif
 
  public:
@@ -198,13 +209,8 @@ state_saver(T&) -> state_saver<T>;
 #  endif
 #endif
 
-#if !defined(STR_CONCAT_)
-#  define STR_CONCAT_(s1, s2) s1##s2
-#endif
-
-#if !defined(STR_CONCAT)
-#  define STR_CONCAT(s1, s2) STR_CONCAT_(s1, s2)
-#endif
+#define STATE_SAVER_STR_CONCAT_(s1, s2) s1##s2
+#define STATE_SAVER_STR_CONCAT(s1, s2) STATE_SAVER_STR_CONCAT_(s1, s2)
 
 #define MAKE_STATE_SAVER(name, x) \
   ::yal::state_saver<decltype(x)> name{x};
@@ -212,9 +218,9 @@ state_saver(T&) -> state_saver<T>;
 #if defined(__COUNTER__)
 #  define STATE_SAVER(x)    \
     ATTR_MAYBE_UNUSED const \
-    MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __COUNTER__), x);
+    MAKE_STATE_SAVER(STATE_SAVER_STR_CONCAT(__state_saver__object_, __COUNTER__), x);
 #elif defined(__LINE__)
 #  define STATE_SAVER(x)    \
     ATTR_MAYBE_UNUSED const \
-    MAKE_STATE_SAVER(STR_CONCAT(__state_saver__object__, __LINE__), x);
+    MAKE_STATE_SAVER(STATE_SAVER_STR_CONCAT(__state_saver__object_, __LINE__), x);
 #endif

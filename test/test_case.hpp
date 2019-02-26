@@ -38,7 +38,7 @@ using namespace yal;
 #endif
 
 #if !defined(test_class)
-#  define test_class STR_CONCAT(test_class_, CASE_NUMBER)
+#  define test_class STATE_SAVER_STR_CONCAT(test_class_, CASE_NUMBER)
 #endif
 
 class test_class {
