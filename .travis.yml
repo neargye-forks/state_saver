@@ -141,7 +141,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-xenial-7
+            - llvm-toolchain-xenial-5.0
           packages:
             - clang-5.0
       env:
@@ -153,7 +153,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-xenial-7
+            - llvm-toolchain-xenial-6.0
           packages:
             - clang-6.0
       env:
