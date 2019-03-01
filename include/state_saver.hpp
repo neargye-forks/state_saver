@@ -55,6 +55,20 @@
 #  error only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
+#if defined(STATE_SAVER_MAY_EXCEPTIONS)
+#  define STATE_SAVER_NOEXCEPT(...) noexcept(__VA_ARGS__)
+#else
+#  define STATE_SAVER_NOEXCEPT(...) noexcept
+#endif
+
+#if defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#  define STATE_SAVER_TRY try {
+#  define STATE_SAVER_CATCH } catch (...) {}
+#else
+#  define STATE_SAVER_TRY
+#  define STATE_SAVER_CATCH
+#endif
+
 namespace yal {
 
 namespace details {
@@ -183,50 +197,23 @@ class state_saver final {
     policy_.dismiss();
   }
 
-#if defined(STATE_SAVER_MAY_EXCEPTIONS)
   template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  void restore(bool force = true) noexcept(std::is_nothrow_assignable<T&, T&>::value) {
+  void restore(bool force = true) STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
     if (policy_.should_restore() || force) {
-      previous_ref_ = previous_value_;
-    }
-  }
-
-  ~state_saver() noexcept(std::is_nothrow_assignable<T&, assignable_t>::value) {
-    if (policy_.should_restore()) {
-      previous_ref_ = static_cast<assignable_t>(previous_value_);
-    }
-  }
-#elif defined(STATE_SAVER_NO_EXCEPTIONS)
-  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  void restore(bool force = true) noexcept {
-    if (policy_.should_restore() || force) {
-      previous_ref_ = previous_value_;
-    }
-  }
-
-  ~state_saver() noexcept {
-    if (policy_.should_restore()) {
-      previous_ref_ = static_cast<assignable_t>(previous_value_);
-    }
-  }
-#elif defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
-  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
-  void restore(bool force = true) noexcept {
-    if (policy_.should_restore() || force) {
-      try {
+      STATE_SAVER_TRY
         previous_ref_ = previous_value_;
-      } catch (...) {}
+      STATE_SAVER_CATCH
     }
   }
 
-  ~state_saver() noexcept {
+  ~state_saver() STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
     if (policy_.should_restore()) {
-      try {
+      STATE_SAVER_TRY
         previous_ref_ = static_cast<assignable_t>(previous_value_);
-      } catch (...) {}
+      STATE_SAVER_CATCH
     }
   }
-#endif
+
 
  private:
   P policy_;
