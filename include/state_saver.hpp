@@ -93,9 +93,19 @@ inline int uncaught_exceptions() noexcept {
 } // namespace details
 
 class on_exit_policy final {
-  bool restore_{true};
+  bool restore_;
 
  public:
+  explicit on_exit_policy(bool restore)
+      : restore_(restore) {}
+
+  on_exit_policy() = delete;
+  on_exit_policy(const on_exit_policy&) = default;
+  on_exit_policy(on_exit_policy&&) = default;
+  on_exit_policy& operator=(const on_exit_policy&) = default;
+  on_exit_policy& operator=(on_exit_policy&&) = default;
+  ~on_exit_policy() = default;
+
   void dismiss() noexcept {
     restore_ = false;
   }
@@ -106,9 +116,19 @@ class on_exit_policy final {
 };
 
 class on_fail_policy final {
-  int ec_{details::uncaught_exceptions()};
+  int ec_;
 
  public:
+  explicit on_fail_policy(bool restore)
+      : ec_(restore ? details::uncaught_exceptions() : -1) {}
+
+  on_fail_policy() = delete;
+  on_fail_policy(const on_fail_policy&) = default;
+  on_fail_policy(on_fail_policy&&) = default;
+  on_fail_policy& operator=(const on_fail_policy&) = default;
+  on_fail_policy& operator=(on_fail_policy&&) = default;
+  ~on_fail_policy() = default;
+
   void dismiss() noexcept {
     ec_ = -1;
   }
@@ -119,9 +139,19 @@ class on_fail_policy final {
 };
 
 class on_success_policy final {
-  int ec_{details::uncaught_exceptions()};
+  int ec_;
 
  public:
+  explicit on_success_policy(bool restore)
+      : ec_(restore ? details::uncaught_exceptions() : -1) {}
+
+  on_success_policy() = delete;
+  on_success_policy(const on_success_policy&) = default;
+  on_success_policy(on_success_policy&&) = default;
+  on_success_policy& operator=(const on_success_policy&) = default;
+  on_success_policy& operator=(on_success_policy&&) = default;
+  ~on_success_policy() = default;
+
   void dismiss() noexcept {
     ec_ = -1;
   }
@@ -189,7 +219,7 @@ class state_saver final {
   state_saver(const T&) = delete;
 
   explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : policy_(),
+      : policy_(true),
         previous_ref_(object),
         previous_value_(object) {}
 
