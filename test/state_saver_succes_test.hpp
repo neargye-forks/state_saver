@@ -108,7 +108,7 @@ TEST_CASE("state_saver_success: not called on error, dismiss after error " CASE_
   REQUIRE(a.i == other_test_value);
 }
 
-#if defined(RESTORE_ENABLE)
+#if CASE_NUMBER != 3
 TEST_CASE("state_saver_success: restore " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {

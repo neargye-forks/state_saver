@@ -52,25 +52,20 @@ class test_class {
   test_class(const test_class&) = default;
 
 #if CASE_NUMBER == 1
-#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) = default;
 #elif CASE_NUMBER == 2
-#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) = delete;
 #elif CASE_NUMBER == 3
-#  undef RESTORE_ENABLE
   test_class& operator=(const test_class&) = delete;
   test_class& operator=(test_class&&) = default;
 #elif CASE_NUMBER == 4
-#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) noexcept(false) {
     throw std::runtime_error{"operator=(const test_class&) throw."};
   }
   test_class& operator=(test_class&&) = default;
 #elif CASE_NUMBER == 5
-#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) noexcept(false) {
     throw std::runtime_error{"operator=(test_class&&) throw."};
