@@ -1,4 +1,4 @@
-// state_saver test
+// state_saver tests
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -22,45 +22,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
-
 #define CASE_NUMBER 1
-#include "test_case.hpp"
+#include "state_saver_exit_test.hpp"
+#include "state_saver_succes_test.hpp"
+#include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 2
-#include "test_case.hpp"
+#include "state_saver_exit_test.hpp"
+#include "state_saver_succes_test.hpp"
+#include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 3
-#include "test_case.hpp"
+#include "state_saver_exit_test.hpp"
+#include "state_saver_succes_test.hpp"
+#include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 4
-#include "test_case.hpp"
+#include "state_saver_exit_test.hpp"
+#include "state_saver_succes_test.hpp"
+#include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 5
-#include "test_case.hpp"
-#undef CASE_NUMBER
-
-#define CASE_NUMBER 6
-#include "test_case.hpp"
-#undef CASE_NUMBER
-
-#define CASE_NUMBER 7
-#include "test_case.hpp"
-#undef CASE_NUMBER
-
-#define CASE_NUMBER 8
-#include "test_case.hpp"
-#undef CASE_NUMBER
-
-#define CASE_NUMBER 9
-#include "test_case.hpp"
-#undef CASE_NUMBER
-
-#define CASE_NUMBER 10
-#include "test_case.hpp"
+#include "state_saver_exit_test.hpp"
+#include "state_saver_succes_test.hpp"
+#include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER

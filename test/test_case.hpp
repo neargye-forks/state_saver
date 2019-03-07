@@ -1,4 +1,4 @@
-// state_saver test_case
+// state_saver tests
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -38,7 +38,7 @@ using namespace yal;
 #endif
 
 #if !defined(test_class)
-#  define test_class STATE_SAVER_STR_CONCAT(test_class_, CASE_NUMBER)
+#  define test_class STATE_SAVER_STR_CONCAT(TEST_CLASS_NAME, CASE_NUMBER)
 #endif
 
 class test_class {
@@ -46,53 +46,34 @@ class test_class {
   int i = 0;
 
   explicit test_class(int i) : i{i} {}
-  test_class() = default;
+  test_class() = delete;
   ~test_class() = default;
   test_class(test_class&&) = default;
+  test_class(const test_class&) = default;
 
 #if CASE_NUMBER == 1
-  test_class(const test_class&) = default;
+#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) = default;
 #elif CASE_NUMBER == 2
-  test_class(const test_class&) = default;
+#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) = delete;
 #elif CASE_NUMBER == 3
-  test_class(const test_class&) = default;
-  test_class& operator=(test_class&) = default;
+#  undef RESTORE_ENABLE
+  test_class& operator=(const test_class&) = delete;
   test_class& operator=(test_class&&) = default;
 #elif CASE_NUMBER == 4
-  test_class(const test_class&) = default;
-  test_class& operator=(test_class&) = default;
-  test_class& operator=(test_class&&) = delete;
-#elif CASE_NUMBER == 5
-  test_class(test_class&) = default;
-  test_class& operator=(const test_class&) = default;
-  test_class& operator=(test_class&&) = default;
-#elif CASE_NUMBER == 6
-  test_class(test_class&) = default;
-  test_class& operator=(const test_class&) = default;
-  test_class& operator=(test_class&&) = delete;
-#elif CASE_NUMBER == 7
-  test_class(test_class&) = default;
-  test_class& operator=(test_class&) = default;
-  test_class& operator=(test_class&&) = default;
-#elif CASE_NUMBER == 8
-  test_class(test_class&) = default;
-  test_class& operator=(test_class&) = default;
-  test_class& operator=(test_class&&) = delete;
-#elif CASE_NUMBER == 9
-  test_class(const test_class&) = default;
+#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) noexcept(false) {
-    throw std::runtime_error{"operator=(const test_class" CASE_NAME "&) throw."};
+    throw std::runtime_error{"operator=(const test_class&) throw."};
   }
   test_class& operator=(test_class&&) = default;
-#elif CASE_NUMBER == 10
-  test_class(const test_class&) = default;
+#elif CASE_NUMBER == 5
+#  define RESTORE_ENABLE
   test_class& operator=(const test_class&) = default;
   test_class& operator=(test_class&&) noexcept(false) {
-    throw std::runtime_error{"operator=(test_class" CASE_NAME "&&) throw."};
+    throw std::runtime_error{"operator=(test_class&&) throw."};
   }
 #endif
 };
@@ -105,8 +86,8 @@ class test_class {
 #  define other_test_value -1
 #endif
 
-#if !defined(is_test_class_nothrow_copy_assignable_v)
-#  define is_test_class_nothrow_copy_assignable_v std::is_nothrow_assignable<test_class&, test_class&>::value
+#if !defined(is_nothrow_restore)
+#  define is_nothrow_restore std::is_nothrow_assignable<test_class&, test_class&>::value
 #endif
 
 #if !defined(REQUIRE_NOTHROW_IF)
@@ -117,468 +98,3 @@ class test_class {
       REQUIRE_THROWS(__VA_ARGS__);            \
     }
 #endif
-
-TEST_CASE("Static test " CASE_NAME) {
-#if CASE_NUMBER == 1
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 2
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(!std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 3
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 4
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(!std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 5
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 6
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(!std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 7
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 8
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(!std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-
-#elif CASE_NUMBER == 9
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#elif CASE_NUMBER == 10
-  static_assert(std::is_constructible<test_class, test_class&>::value, "");
-  static_assert(std::is_nothrow_constructible<test_class, test_class&>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class>::value, "");
-  static_assert(!std::is_nothrow_assignable<test_class&, test_class>::value, "");
-
-  static_assert(std::is_assignable<test_class&, test_class&>::value, "");
-  static_assert(std::is_nothrow_assignable<test_class&, test_class&>::value, "");
-#endif
-}
-
-TEST_CASE("Called on scope leave " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-
-    const auto SomeLambda = [&]() {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      STATE_SAVER_EXIT(a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-
-    const auto SomeLambda = [&]() {
-      STATE_SAVER_EXIT(a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-
-    const auto SomeLambda = [&]() {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      SomeLambda();
-    }());
-    REQUIRE(a.i == test_value);
-  }
-}
-
-TEST_CASE("Called on error " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      throw std::runtime_error{"error"};
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      STATE_SAVER_EXIT(a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      throw std::runtime_error{"error"};
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      throw std::runtime_error{"error"};
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-}
-
-TEST_CASE("Dismiss before scope leave " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-}
-
-TEST_CASE("Dismiss before error " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      throw std::runtime_error{"error"};
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      throw std::runtime_error{"error"};
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-}
-
-TEST_CASE("Called on error, dismiss after error " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      throw std::runtime_error{"error"};
-      state_saver_exit.dismiss();
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      throw std::runtime_error{"error"};
-      state_saver_exit.dismiss();
-    };
-
-    REQUIRE_THROWS([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-}
-
-TEST_CASE("Restore " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.restore(false);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.restore(false);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-}
-
-TEST_CASE("Restore force " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.restore(true);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.restore(true);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == test_value);
-  }
-}
-
-TEST_CASE("Dismiss, restore " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      state_saver_exit.restore(false);
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      state_saver_exit.restore(false);
-      REQUIRE(a.i == other_test_value);
-    };
-
-    REQUIRE_NOTHROW([&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-}
-
-TEST_CASE("Dismiss, restore force " CASE_NAME) {
-  SECTION("state_saver_exit") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      state_saver_exit<decltype(a)> state_saver_exit{a};
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      state_saver_exit.restore(true);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-
-  SECTION("MAKE_STATE_SAVER_EXIT") {
-    test_class a{test_value};
-    const auto some_function = [](test_class& a) {
-      MAKE_STATE_SAVER_EXIT(state_saver_exit, a);
-      a.i = other_test_value;
-      REQUIRE(a.i == other_test_value);
-      state_saver_exit.dismiss();
-      state_saver_exit.restore(true);
-      REQUIRE(a.i == test_value);
-      a.i = other_test_value;
-    };
-
-    REQUIRE_NOTHROW_IF(is_test_class_nothrow_copy_assignable_v, [&]() {
-      some_function(a);
-    }());
-    REQUIRE(a.i == other_test_value);
-  }
-}
