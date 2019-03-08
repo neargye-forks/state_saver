@@ -227,8 +227,8 @@ class state_saver final {
     policy_.dismiss();
   }
 
-  template <typename = typename std::enable_if<std::is_assignable<T&, T&>::value>::type>
   void restore(bool force = true) STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
+    static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore require copy operator=.");
     if (policy_.should_restore() || force) {
       STATE_SAVER_TRY
         previous_ref_ = previous_value_;
