@@ -54,7 +54,7 @@ void foo4(int& a) {
   std::cout << "foo4 a = " << a << std::endl;
 
   state_saver.dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "foo4 dismiss restore" << std::endl;
+  std::cout << "foo4 state_saver::dismiss" << std::endl;
 }
 
 void foo5(int& a) {
@@ -64,25 +64,11 @@ void foo5(int& a) {
   std::cout << "foo5 a = " << a << std::endl;
 
   state_saver.dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "foo5 dismiss restore" << std::endl;
+  std::cout << "foo5 state_saver::dismiss" << std::endl;
 
-  state_saver.restore(/*force:*/ true); // Restore force state.
-  std::cout << "foo5 force restore" << std::endl;
+  state_saver.restore(); // Restore state.
+  std::cout << "foo5 state_saver::restore" << std::endl;
   std::cout << "foo5 a = " << a << std::endl;
-}
-
-void foo6(int& a) {
-  MAKE_STATE_SAVER_EXIT(state_saver, a); // Custom state saver.
-
-  a = 6;
-  std::cout << "foo6 a = " << a << std::endl;
-
-  state_saver.dismiss(); // Dismiss, state will not automatically restored.
-  std::cout << "foo6 dismiss restore" << std::endl;
-
-  state_saver.restore(/*force:*/ false); // Restore state if not dismiss.
-  std::cout << "foo6 restore" << std::endl;
-  std::cout << "foo6 a = " << a << std::endl;
 }
 
 int main() {
@@ -102,9 +88,6 @@ int main() {
   std::cout << "main a = " << a << std::endl;
 
   foo5(a);
-  std::cout << "main a = " << a << std::endl;
-
-  foo6(a);
   std::cout << "main a = " << a << std::endl;
 
   return 0;

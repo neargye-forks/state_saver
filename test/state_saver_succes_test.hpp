@@ -115,29 +115,7 @@ TEST_CASE("state_saver_success: restore " CASE_NAME) {
     state_saver_succes<decltype(a)> state_saver_succes{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_succes.restore(false);
-    REQUIRE(a.i == test_value);
-    a.i = other_test_value;
-  };
-
-  REQUIRE_NOTHROW_IF(is_nothrow_restore, [&]() {
-    some_function(a);
-  }());
-
-  if (is_nothrow_restore) {
-    REQUIRE(a.i == test_value);
-  } else {
-    REQUIRE(a.i == other_test_value);
-  }
-}
-
-TEST_CASE("state_saver_success: restore force " CASE_NAME) {
-  test_class a{test_value};
-  const auto some_function = [](test_class& a) {
-    state_saver_succes<decltype(a)> state_saver_succes{a};
-    a.i = other_test_value;
-    REQUIRE(a.i == other_test_value);
-    state_saver_succes.restore(true);
+    state_saver_succes.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };
@@ -160,25 +138,7 @@ TEST_CASE("state_saver_success: dismiss, restore " CASE_NAME) {
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     state_saver_succes.dismiss();
-    state_saver_succes.restore(false);
-    REQUIRE(a.i == other_test_value);
-  };
-
-  REQUIRE_NOTHROW([&]() {
-    some_function(a);
-  }());
-
-  REQUIRE(a.i == other_test_value);
-}
-
-TEST_CASE("state_saver_success: dismiss, restore force " CASE_NAME) {
-  test_class a{test_value};
-  const auto some_function = [](test_class& a) {
-    state_saver_succes<decltype(a)> state_saver_succes{a};
-    a.i = other_test_value;
-    REQUIRE(a.i == other_test_value);
-    state_saver_succes.dismiss();
-    state_saver_succes.restore(true);
+    state_saver_succes.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };

@@ -115,25 +115,7 @@ TEST_CASE("state_saver_fail: restore " CASE_NAME) {
     state_saver_fail<decltype(a)> state_saver_fail{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_fail.restore(false);
-    REQUIRE(a.i == other_test_value);
-    a.i = other_test_value;
-  };
-
-  REQUIRE_NOTHROW([&]() {
-    some_function(a);
-  }());
-
-  REQUIRE(a.i == other_test_value);
-}
-
-TEST_CASE("state_saver_fail: restore force " CASE_NAME) {
-  test_class a{test_value};
-  const auto some_function = [](test_class& a) {
-    state_saver_fail<decltype(a)> state_saver_fail{a};
-    a.i = other_test_value;
-    REQUIRE(a.i == other_test_value);
-    state_saver_fail.restore(true);
+    state_saver_fail.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };
@@ -156,25 +138,7 @@ TEST_CASE("state_saver_fail: dismiss, restore " CASE_NAME) {
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     state_saver_fail.dismiss();
-    state_saver_fail.restore(false);
-    REQUIRE(a.i == other_test_value);
-  };
-
-  REQUIRE_NOTHROW([&]() {
-    some_function(a);
-  }());
-
-  REQUIRE(a.i == other_test_value);
-}
-
-TEST_CASE("state_saver_fail: dismiss, restore force " CASE_NAME) {
-  test_class a{test_value};
-  const auto some_function = [](test_class& a) {
-    state_saver_fail<decltype(a)> state_saver_fail{a};
-    a.i = other_test_value;
-    REQUIRE(a.i == other_test_value);
-    state_saver_fail.dismiss();
-    state_saver_fail.restore(true);
+    state_saver_fail.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };

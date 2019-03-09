@@ -227,13 +227,11 @@ class state_saver final {
     policy_.dismiss();
   }
 
-  void restore(bool force = true) STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
+  void restore() STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
     static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore require copy operator=.");
-    if (policy_.should_restore() || force) {
-      STATE_SAVER_TRY
-        previous_ref_ = previous_value_;
-      STATE_SAVER_CATCH
-    }
+    STATE_SAVER_TRY
+      previous_ref_ = previous_value_;
+    STATE_SAVER_CATCH
   }
 
   ~state_saver() STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
@@ -243,7 +241,6 @@ class state_saver final {
       STATE_SAVER_CATCH
     }
   }
-
 
  private:
   P policy_;
