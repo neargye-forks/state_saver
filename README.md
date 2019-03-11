@@ -22,7 +22,7 @@ StateSaver - saves the origin variable value and restores on scope exit, undoes 
 * Header-only
 * Dependency-free
 
-## [Examples](example/example.cpp)
+## [Examples](example)
 
 ```cpp
 void Foo(A& a)
