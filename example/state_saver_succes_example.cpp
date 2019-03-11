@@ -23,6 +23,7 @@
 #include <state_saver.hpp>
 
 #include <iostream>
+#include <stdexcept>
 
 void foo1(int& a) {
   STATE_SAVER_SUCCESS(a); // State saver on succes.
