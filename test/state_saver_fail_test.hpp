@@ -1,5 +1,3 @@
-// state_saver tests
-//
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2018 - 2019 Daniil Goncharov <neargye@gmail.com>.
