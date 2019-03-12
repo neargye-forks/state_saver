@@ -48,11 +48,11 @@
 #if !defined(STATE_SAVER_MAY_EXCEPTIONS) && !defined(STATE_SAVER_NO_EXCEPTIONS) && !defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
 #  define STATE_SAVER_MAY_EXCEPTIONS
 #elif (defined(STATE_SAVER_MAY_EXCEPTIONS) + defined(STATE_SAVER_NO_EXCEPTIONS) + defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)) > 1
-#  error only one of STATE_SAVER_MAY_EXCEPTIONS and STATE_SAVER_NO_EXCEPTIONS and STATE_SAVER_SUPPRESS_EXCEPTIONS may be defined.
+#  error Only one of STATE_SAVER_MAY_EXCEPTIONS and STATE_SAVER_NO_EXCEPTIONS and STATE_SAVER_SUPPRESS_EXCEPTIONS may be defined.
 #endif
 
 #if (defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE) + defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)) > 1
-#  error only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
+#  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
 #if defined(STATE_SAVER_MAY_EXCEPTIONS)
@@ -72,6 +72,7 @@
 namespace yal {
 
 namespace details {
+
 #if !defined(YAL_DETAILS_UNCAUGHT_EXCEPTIONS)
 #  if defined(_MSC_VER) && _MSC_VER < 1900
 inline int uncaught_exceptions() noexcept {
@@ -90,6 +91,7 @@ inline int uncaught_exceptions() noexcept {
 #  endif
 #define YAL_DETAILS_UNCAUGHT_EXCEPTIONS
 #endif
+
 } // namespace details
 
 class on_exit_policy final {
@@ -292,23 +294,24 @@ using state_saver_succes = state_saver<U, on_success_policy>;
 #define MAKE_STATE_SAVER_SUCCESS(name, x) ::yal::state_saver_succes<decltype(x)> name{x};
 
 #if defined(__COUNTER__)
-#  define STATE_SAVER_EXIT(x) \
-    ATTR_MAYBE_UNUSED const   \
-    MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __COUNTER__), x);
-#  define STATE_SAVER_FAIL(x) \
-    ATTR_MAYBE_UNUSED const   \
-    MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __COUNTER__), x);
-#  define STATE_SAVER_SUCCESS(x) \
-    ATTR_MAYBE_UNUSED const      \
-    MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __COUNTER__), x);
+#  define STATE_SAVER_COUNTER __COUNTER__
 #elif defined(__LINE__)
-#  define STATE_SAVER_EXIT(x) \
-    ATTR_MAYBE_UNUSED const   \
-    MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __LINE__), x);
-#  define STATE_SAVER_FAIL(x) \
-    ATTR_MAYBE_UNUSED const   \
-    MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __LINE__), x);
-#  define STATE_SAVER_SUCCESS(x) \
-    ATTR_MAYBE_UNUSED const      \
-    MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __LINE__), x);
+#  define STATE_SAVER_COUNTER __LINE__
+#else
+#  error state_saver not supported by compiler.
 #endif
+
+// Saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+#define STATE_SAVER_EXIT(x) \
+  ATTR_MAYBE_UNUSED const   \
+  MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
+
+// Saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
+#define STATE_SAVER_FAIL(x) \
+  ATTR_MAYBE_UNUSED const   \
+  MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
+
+// Saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
+#define STATE_SAVER_SUCCESS(x) \
+  ATTR_MAYBE_UNUSED const      \
+  MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, STATE_SAVER_COUNTER), x);
