@@ -210,6 +210,11 @@ class state_saver final {
       T&&, T&>::type;
 #endif
 
+  static_assert(std::is_same<P, on_exit_policy>::value ||
+                    std::is_same<P, on_fail_policy>::value ||
+                    std::is_same<P, on_success_policy>::value,
+                "state_saver require on_exit_policy, on_fail_policy or on_success_policy.");
+
  public:
   state_saver() = delete;
   state_saver(const state_saver&) = delete;
