@@ -43,7 +43,7 @@ void foo2(int& a) {
 }
 
 void foo3(int& a) {
-  yal::state_saver_succes<decltype(a)> state_saver{a}; // Custom state saver  on succes.
+  state_saver::state_saver_succes<decltype(a)> state_saver{a}; // Custom state saver  on succes.
 
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;

@@ -27,7 +27,7 @@
 #include <catch.hpp>
 
 #include <state_saver.hpp>
-using namespace yal;
+using namespace state_saver;
 
 #if !defined(CASE_NAME)
 #  define CASE_NAME_STR_(x) #x

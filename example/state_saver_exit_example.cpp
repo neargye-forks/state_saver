@@ -43,7 +43,7 @@ void foo2(int& a) {
 }
 
 void foo3(int& a) {
-  yal::state_saver_exit<decltype(a)> state_saver{a}; // Custom state saver on exit, without macros.
+  state_saver::state_saver_exit<decltype(a)> state_saver{a}; // Custom state saver on exit, without macros.
 
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;

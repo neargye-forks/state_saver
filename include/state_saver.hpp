@@ -69,30 +69,25 @@
 #  define STATE_SAVER_CATCH
 #endif
 
-namespace yal {
+namespace state_saver {
 
 namespace details {
 
-#if !defined(YAL_DETAILS_UNCAUGHT_EXCEPTIONS)
-#  if defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(_MSC_VER) && _MSC_VER < 1900
 inline int uncaught_exceptions() noexcept {
   return *(reinterpret_cast<int*>(static_cast<char*>(static_cast<void*>(_getptd())) + (sizeof(void*) == 8 ? 0x100 : 0x90)));
 }
-#  elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
+#elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
 struct __cxa_eh_globals;
 extern "C" __cxa_eh_globals* __cxa_get_globals() noexcept;
 inline int uncaught_exceptions() noexcept {
   return *(reinterpret_cast<unsigned int*>(static_cast<char*>(static_cast<void*>(__cxa_get_globals())) + sizeof(void*)));
 }
-#  else
+#else
 inline int uncaught_exceptions() noexcept {
   return std::uncaught_exceptions();
 }
-#  endif
-#define YAL_DETAILS_UNCAUGHT_EXCEPTIONS
 #endif
-
-} // namespace details
 
 class on_exit_policy final {
   bool restore_;
@@ -255,16 +250,18 @@ class state_saver final {
   T previous_value_;
 };
 
-template <typename U>
-using state_saver_exit = state_saver<U, on_exit_policy>;
+} // namespace details
 
 template <typename U>
-using state_saver_fail = state_saver<U, on_fail_policy>;
+using state_saver_exit = details::state_saver<U, details::on_exit_policy>;
 
 template <typename U>
-using state_saver_succes = state_saver<U, on_success_policy>;
+using state_saver_fail = details::state_saver<U, details::on_fail_policy>;
 
-} // namespace yal
+template <typename U>
+using state_saver_succes = details::state_saver<U, details::on_success_policy>;
+
+} // namespace state_saver
 
 // ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
 #if !defined(ATTR_MAYBE_UNUSED)
@@ -294,9 +291,9 @@ using state_saver_succes = state_saver<U, on_success_policy>;
 #define STATE_SAVER_STR_CONCAT_(s1, s2) s1##s2
 #define STATE_SAVER_STR_CONCAT(s1, s2) STATE_SAVER_STR_CONCAT_(s1, s2)
 
-#define MAKE_STATE_SAVER_EXIT(name, x) ::yal::state_saver_exit<decltype(x)> name{x};
-#define MAKE_STATE_SAVER_FAIL(name, x) ::yal::state_saver_fail<decltype(x)> name{x};
-#define MAKE_STATE_SAVER_SUCCESS(name, x) ::yal::state_saver_succes<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_EXIT(name, x) ::state_saver::state_saver_exit<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
+#define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
 
 #if defined(__COUNTER__)
 #  define STATE_SAVER_COUNTER __COUNTER__
