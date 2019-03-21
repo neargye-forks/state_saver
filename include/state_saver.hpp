@@ -117,7 +117,7 @@ class on_fail_policy final {
 
  public:
   explicit on_fail_policy(bool restore)
-      : ec_(restore ? details::uncaught_exceptions() : -1) {}
+      : ec_(restore ? uncaught_exceptions() : -1) {}
 
   on_fail_policy() = delete;
   on_fail_policy(const on_fail_policy&) = default;
@@ -131,7 +131,7 @@ class on_fail_policy final {
   }
 
   bool should_restore() const noexcept {
-    return ec_ != -1 && ec_ < details::uncaught_exceptions();
+    return ec_ != -1 && ec_ < uncaught_exceptions();
   }
 };
 
@@ -140,7 +140,7 @@ class on_success_policy final {
 
  public:
   explicit on_success_policy(bool restore)
-      : ec_(restore ? details::uncaught_exceptions() : -1) {}
+      : ec_(restore ? uncaught_exceptions() : -1) {}
 
   on_success_policy() = delete;
   on_success_policy(const on_success_policy&) = default;
@@ -154,13 +154,24 @@ class on_success_policy final {
   }
 
   bool should_restore() const noexcept {
-    return ec_ != -1 && ec_ >= details::uncaught_exceptions();
+    return ec_ != -1 && ec_ >= uncaught_exceptions();
   }
 };
 
 template <typename U, typename P>
 class state_saver final {
   using T = typename std::remove_reference<U>::type;
+#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
+  using assignable_t = T&&;
+#elif defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
+  using assignable_t = T&;
+#else
+  using assignable_t = typename std::conditional<
+      std::is_nothrow_assignable<T&, T&&>::value ||
+          !std::is_assignable<T&, T&>::value ||
+          (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T&&>::value),
+      T&&, T&>::type;
+#endif
 
   static_assert(!std::is_const<T>::value,
                 "state_saver require not const type.");
@@ -174,37 +185,12 @@ class state_saver final {
                 "state_saver require not function type.");
   static_assert(std::is_constructible<T, T&>::value,
                 "state_saver require copy constructible.");
-
-#if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
-  static_assert(std::is_assignable<T&, T>::value,
-                "state_saver require move operator=.");
-#  if defined(STATE_SAVER_NO_EXCEPTIONS)
-  static_assert(std::is_nothrow_assignable<T&, T>::value,
-                "state_saver require noexcept move operator=.");
-#  endif
-  using assignable_t = T&&;
-#elif defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)
-  static_assert(std::is_assignable<T&, T&>::value,
-                "state_saver require copy operator=.");
-#  if defined(STATE_SAVER_NO_EXCEPTIONS)
-  static_assert(std::is_nothrow_assignable<T&, T&>::value,
-                "state_saver require noexcept copy operator=.");
-#  endif
-  using assignable_t = T&;
-#else
-  static_assert(std::is_assignable<T&, T>::value || std::is_assignable<T&, T&>::value,
+  static_assert(std::is_assignable<T&, assignable_t>::value,
                 "state_saver require operator=.");
-#  if defined(STATE_SAVER_NO_EXCEPTIONS)
-  static_assert(std::is_nothrow_assignable<T&, T>::value || std::is_nothrow_assignable<T&, T&>::value,
+#if defined(STATE_SAVER_NO_EXCEPTIONS)
+  static_assert(std::is_nothrow_assignable<T&, assignable_t>::value,
                 "state_saver require noexcept operator=.");
-#  endif
-  using assignable_t = typename std::conditional<
-      std::is_nothrow_assignable<T&, T>::value ||
-          !std::is_assignable<T&, T&>::value ||
-          (!std::is_nothrow_assignable<T&, T&>::value && std::is_assignable<T&, T>::value),
-      T&&, T&>::type;
 #endif
-
   static_assert(std::is_same<P, on_exit_policy>::value ||
                     std::is_same<P, on_fail_policy>::value ||
                     std::is_same<P, on_success_policy>::value,
@@ -252,14 +238,14 @@ class state_saver final {
 
 } // namespace details
 
-template <typename U>
-using state_saver_exit = details::state_saver<U, details::on_exit_policy>;
+template <typename T>
+using state_saver_exit = details::state_saver<T, details::on_exit_policy>;
 
-template <typename U>
-using state_saver_fail = details::state_saver<U, details::on_fail_policy>;
+template <typename T>
+using state_saver_fail = details::state_saver<T, details::on_fail_policy>;
 
-template <typename U>
-using state_saver_succes = details::state_saver<U, details::on_success_policy>;
+template <typename T>
+using state_saver_succes = details::state_saver<T, details::on_success_policy>;
 
 } // namespace state_saver
 
