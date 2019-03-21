@@ -71,7 +71,7 @@
 
 namespace state_saver {
 
-namespace details {
+namespace detail {
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 inline int uncaught_exceptions() noexcept {
@@ -236,16 +236,16 @@ class state_saver final {
   T previous_value_;
 };
 
-} // namespace details
+} // namespace detail
 
 template <typename T>
-using state_saver_exit = details::state_saver<T, details::on_exit_policy>;
+using state_saver_exit = detail::state_saver<T, detail::on_exit_policy>;
 
 template <typename T>
-using state_saver_fail = details::state_saver<T, details::on_fail_policy>;
+using state_saver_fail = detail::state_saver<T, detail::on_fail_policy>;
 
 template <typename T>
-using state_saver_succes = details::state_saver<T, details::on_success_policy>;
+using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
 
 } // namespace state_saver
 
