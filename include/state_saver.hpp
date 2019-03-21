@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// vesion 0.4.2
+// vesion 0.4.3
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -277,10 +277,6 @@ using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
 #define STATE_SAVER_STR_CONCAT_(s1, s2) s1##s2
 #define STATE_SAVER_STR_CONCAT(s1, s2) STATE_SAVER_STR_CONCAT_(s1, s2)
 
-#define MAKE_STATE_SAVER_EXIT(name, x) ::state_saver::state_saver_exit<decltype(x)> name{x};
-#define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
-#define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
-
 #if defined(__COUNTER__)
 #  define STATE_SAVER_COUNTER __COUNTER__
 #elif defined(__LINE__)
@@ -290,16 +286,19 @@ using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
 #endif
 
 // Saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+#define MAKE_STATE_SAVER_EXIT(name, x) ::state_saver::state_saver_exit<decltype(x)> name{x};
 #define STATE_SAVER_EXIT(x) \
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
 
 // Saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
+#define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
 #define STATE_SAVER_FAIL(x) \
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
 
 // Saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
+#define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
 #define STATE_SAVER_SUCCESS(x) \
   ATTR_MAYBE_UNUSED const      \
   MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, STATE_SAVER_COUNTER), x);
