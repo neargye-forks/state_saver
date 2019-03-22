@@ -55,16 +55,12 @@
 #  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
-#if defined(STATE_SAVER_MAY_EXCEPTIONS)
-#  define STATE_SAVER_NOEXCEPT(...) noexcept(__VA_ARGS__)
-#else
-#  define STATE_SAVER_NOEXCEPT(...) noexcept
-#endif
-
 #if defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#  define STATE_SAVER_NOEXCEPT(...) noexcept
 #  define STATE_SAVER_TRY try {
 #  define STATE_SAVER_CATCH } catch (...) {}
 #else
+#  define STATE_SAVER_NOEXCEPT(...) noexcept(__VA_ARGS__)
 #  define STATE_SAVER_TRY
 #  define STATE_SAVER_CATCH
 #endif
