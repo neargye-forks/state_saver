@@ -15,16 +15,16 @@ master |[![Build Status](https://travis-ci.org/Neargye/state_saver.svg?branch=ma
 
 ## What is State Saver?
 
-state_saver_exit - saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+state_saver_exit - saves the original variable value and restores on scope exit, undoes any changes that could occur to the object.
 
-state_saver_fail - saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
+state_saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occur to the object.
 
-state_saver_succes - saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
+state_saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occur to the object.
 
 ## Features
 
-* Simple syntax
 * C++11
+* Simple syntax
 * Header-only
 * Dependency-free
 
@@ -66,8 +66,9 @@ You should add required file [state_saver.hpp](include/state_saver.hpp).
 
 ## Compiler compatibility
 
-* GCC
-* Clang
-* MSVC
+* Clang/LLVM >= 3.6
+* Visual C++ >= 14 / Visual Studio >= 2015
+* Xcode >= 7
+* GCC >= 4.8
 
 ## Licensed under the [MIT License](LICENSE)
