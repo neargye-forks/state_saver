@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// vesion 0.4.4
+// vesion 0.4.5
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -37,13 +37,13 @@
 #endif
 
 // state_saver throwable settings:
-// STATE_SAVER_MAY_EXCEPTIONS
-// STATE_SAVER_NO_EXCEPTIONS
-// STATE_SAVER_SUPPRESS_EXCEPTIONS
+// STATE_SAVER_MAY_EXCEPTIONS restore may throw exceptions.
+// STATE_SAVER_NO_EXCEPTIONS require noexcept restore.
+// STATE_SAVER_SUPPRESS_EXCEPTIONS exceptions when restore will be suppressed.
 
 // state_saver assignable settings:
-// STATE_SAVER_FORCE_MOVE_ASSIGNABLE
-// STATE_SAVER_FORCE_COPY_ASSIGNABLE
+// STATE_SAVER_FORCE_MOVE_ASSIGNABLE restore on scope exit will be move assigned.
+// STATE_SAVER_FORCE_COPY_ASSIGNABLE restore on scope exit will be copy assigned.
 
 #if !defined(STATE_SAVER_MAY_EXCEPTIONS) && !defined(STATE_SAVER_NO_EXCEPTIONS) && !defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
 #  define STATE_SAVER_MAY_EXCEPTIONS
@@ -181,12 +181,6 @@ class state_saver final {
                 "state_saver require not function type.");
   static_assert(std::is_constructible<T, T&>::value,
                 "state_saver require copy constructible.");
-  static_assert(std::is_assignable<T&, assignable_t>::value,
-                "state_saver require operator=.");
-#if defined(STATE_SAVER_NO_EXCEPTIONS)
-  static_assert(std::is_nothrow_assignable<T&, assignable_t>::value,
-                "state_saver require noexcept operator=.");
-#endif
   static_assert(std::is_same<P, on_exit_policy>::value ||
                     std::is_same<P, on_fail_policy>::value ||
                     std::is_same<P, on_success_policy>::value,
@@ -213,12 +207,19 @@ class state_saver final {
 
   void restore() STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
     static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore require copy operator=.");
+#if defined(STATE_SAVER_NO_EXCEPTIONS)
+    static_assert(std::is_nothrow_assignable<T&, T&>::value, "state_saver::restore require noexcept copy operator=.");
+#endif
     STATE_SAVER_TRY
       previous_ref_ = previous_value_;
     STATE_SAVER_CATCH
   }
 
   ~state_saver() STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
+    static_assert(std::is_assignable<T&, assignable_t>::value, "state_saver require operator=.");
+#if defined(STATE_SAVER_NO_EXCEPTIONS)
+    static_assert(std::is_nothrow_assignable<T&, assignable_t>::value, "state_saver require noexcept operator=.");
+#endif
     if (policy_.should_restore()) {
       STATE_SAVER_TRY
         previous_ref_ = static_cast<assignable_t>(previous_value_);
@@ -277,23 +278,21 @@ using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
 #  define STATE_SAVER_COUNTER __COUNTER__
 #elif defined(__LINE__)
 #  define STATE_SAVER_COUNTER __LINE__
-#else
-#  error state_saver not supported by compiler.
 #endif
 
-// Saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+// STATE_SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
 #define MAKE_STATE_SAVER_EXIT(name, x) ::state_saver::state_saver_exit<decltype(x)> name{x};
 #define STATE_SAVER_EXIT(x) \
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
 
-// Saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
+// STATE_SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
 #define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
 #define STATE_SAVER_FAIL(x) \
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
 
-// Saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
+// STATE_SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
 #define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
 #define STATE_SAVER_SUCCESS(x) \
   ATTR_MAYBE_UNUSED const      \
