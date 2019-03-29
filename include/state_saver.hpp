@@ -39,7 +39,7 @@
 // state_saver throwable settings:
 // STATE_SAVER_MAY_EXCEPTIONS restore may throw exceptions.
 // STATE_SAVER_NO_EXCEPTIONS require noexcept restore.
-// STATE_SAVER_SUPPRESS_EXCEPTIONS exceptions when restore will be suppressed.
+// STATE_SAVER_SUPPRESS_EXCEPTIONS exceptions during restore will be suppressed.
 
 // state_saver assignable settings:
 // STATE_SAVER_FORCE_MOVE_ASSIGNABLE restore on scope exit will be move assigned.
@@ -286,13 +286,13 @@ using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
 
-// STATE_SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occure to the object.
+// STATE_SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
 #define STATE_SAVER_FAIL(x) \
   ATTR_MAYBE_UNUSED const   \
   MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
 
-// STATE_SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occure to the object.
+// STATE_SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
 #define STATE_SAVER_SUCCESS(x) \
   ATTR_MAYBE_UNUSED const      \

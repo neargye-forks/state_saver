@@ -17,14 +17,13 @@ master |[![Build Status](https://travis-ci.org/Neargye/state_saver.svg?branch=ma
 
 state_saver_exit - saves the original variable value and restores on scope exit, undoes any changes that could occur to the object.
 
-state_saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown before the block's end, undoes any changes that could occur to the object.
+state_saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occur to the object.
 
-state_saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown, undoes any changes that could occur to the object.
+state_saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occur to the object.
 
 ## Features
 
 * C++11
-* Simple syntax
 * Header-only
 * Dependency-free
 
@@ -46,7 +45,7 @@ void Foo(A& a)
   STATE_SAVER_FAIL(a);
   ... // Alter state from non-const functions.
   ... // Other code.
-  // Original state automatically restored when an exception has been thrown before the block's end.
+  // Original state automatically restored when an exception has been thrown.
 }
 ```
 
@@ -56,7 +55,7 @@ void Foo(A& a)
   STATE_SAVER_SUCCESS(a);
   ... // Alter state from non-const functions.
   ... // Other code.
-  // Original state automatically restored when no exceptions have been thrown
+  // Original state automatically restored when no exceptions have been thrown.
 }
 ```
 
