@@ -43,8 +43,11 @@ void foo2(int& a) {
 }
 
 void foo3(int& a) {
-  state_saver::state_saver_succes<decltype(a)> state_saver{a}; // Custom state saver  on succes.
-
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
+  state_saver::state_saver_succes state_saver{a}; // Custom state saver on succes.
+#else
+  state_saver::state_saver_succes<decltype(a)> state_saver{a}; // Custom state saver on succes.
+#endif
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;
   // Original state will automatically restored, on scope leave.
