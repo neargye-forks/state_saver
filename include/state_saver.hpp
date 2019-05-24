@@ -122,7 +122,7 @@ struct on_success_policy final {
 };
 
 template <typename U, typename P>
-class state_saver final {
+class state_saver {
   using T = typename std::remove_reference<U>::type;
 #if defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE)
   using assignable_t = T&&;
@@ -163,8 +163,9 @@ class state_saver final {
   state_saver(T&&) = delete;
   state_saver(const T&) = delete;
 
-  explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : previous_ref_(object),
+  state_saver(T& object, P policy) noexcept(std::is_nothrow_constructible<T, T&>::value)
+      : policy_(policy),
+        previous_ref_(object),
         previous_value_(object) {}
 
   void dismiss() noexcept {
@@ -201,14 +202,37 @@ class state_saver final {
 
 } // namespace detail
 
-template <typename T>
-using state_saver_exit = detail::state_saver<T, detail::on_exit_policy>;
+template <typename U>
+class state_saver_exit final : public detail::state_saver<U, detail::on_exit_policy> {
+ public:
+  explicit state_saver_exit(U& object)
+      : detail::state_saver<U, detail::on_exit_policy>(object, detail::on_exit_policy{}) {}
+};
 
-template <typename T>
-using state_saver_fail = detail::state_saver<T, detail::on_fail_policy>;
+template <typename U>
+class state_saver_fail final : public detail::state_saver<U, detail::on_fail_policy> {
+ public:
+  explicit state_saver_fail(U& object)
+      : detail::state_saver<U, detail::on_fail_policy>(object, detail::on_fail_policy{}) {}
+};
 
-template <typename T>
-using state_saver_succes = detail::state_saver<T, detail::on_success_policy>;
+template <typename U>
+class state_saver_succes final : public detail::state_saver<U, detail::on_success_policy> {
+ public:
+  explicit state_saver_succes(U& object)
+      : detail::state_saver<U, detail::on_success_policy>(object, detail::on_success_policy{}) {}
+};
+
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
+template <typename U>
+state_saver_exit(U&) -> state_saver_exit<U>;
+
+template <typename U>
+state_saver_fail(U&) -> state_saver_fail<U>;
+
+template <typename U>
+state_saver_succes(U&) -> state_saver_succes<U>;
+#endif
 
 } // namespace state_saver
 
