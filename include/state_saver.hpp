@@ -163,9 +163,8 @@ class state_saver {
   state_saver(T&&) = delete;
   state_saver(const T&) = delete;
 
-  state_saver(T& object, P policy) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : policy_(policy),
-        previous_ref_(object),
+  explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
+      : previous_ref_(object),
         previous_value_(object) {}
 
   void dismiss() noexcept {
@@ -205,22 +204,19 @@ class state_saver {
 template <typename U>
 class state_saver_exit final : public detail::state_saver<U, detail::on_exit_policy> {
  public:
-  explicit state_saver_exit(U& object)
-      : detail::state_saver<U, detail::on_exit_policy>(object, detail::on_exit_policy{}) {}
+  using detail::state_saver<U, detail::on_exit_policy>::state_saver;
 };
 
 template <typename U>
 class state_saver_fail final : public detail::state_saver<U, detail::on_fail_policy> {
  public:
-  explicit state_saver_fail(U& object)
-      : detail::state_saver<U, detail::on_fail_policy>(object, detail::on_fail_policy{}) {}
+  using detail::state_saver<U, detail::on_fail_policy>::state_saver;
 };
 
 template <typename U>
 class state_saver_succes final : public detail::state_saver<U, detail::on_success_policy> {
  public:
-  explicit state_saver_succes(U& object)
-      : detail::state_saver<U, detail::on_success_policy>(object, detail::on_success_policy{}) {}
+  using detail::state_saver<U, detail::on_success_policy>::state_saver;
 };
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
