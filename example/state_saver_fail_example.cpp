@@ -44,9 +44,9 @@ void foo2(int& a) {
 
 void foo3(int& a) {
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  state_saver::state_saver_fail state_saver{a}; // Custom state saver on fail.
+  state_saver::state_saver_fail state_saver{a}; // Custom state saver on fail, without macros.
 #else
-  state_saver::state_saver_fail<decltype(a)> state_saver{a}; // Custom state saver on fail.
+  state_saver::state_saver_fail<decltype(a)> state_saver{a}; // Custom state saver on fail, without macros.
 #endif
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;
