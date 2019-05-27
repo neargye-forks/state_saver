@@ -29,7 +29,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#ifndef STATE_SAVER_HPP
+#define STATE_SAVER_HPP
 
 #include <type_traits>
 #if (defined(_MSC_VER) && _MSC_VER >= 1900) || ((defined(__clang__) || defined(__GNUC__)) && __cplusplus >= 201700L)
@@ -138,7 +139,8 @@ class state_saver {
 
   static_assert(!std::is_const<T>::value,
                 "state_saver require not const type.");
-  static_assert(!std::is_rvalue_reference<U>::value && (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
+  static_assert(!std::is_rvalue_reference<U>::value &&
+                    (std::is_lvalue_reference<U>::value || std::is_same<T, U>::value),
                 "state_saver require lvalue type.");
   static_assert(!std::is_array<T>::value,
                 "state_saver require not array type.");
@@ -283,3 +285,5 @@ state_saver_succes(U&) -> state_saver_succes<U>;
 #define STATE_SAVER_SUCCESS(x) \
   ATTR_MAYBE_UNUSED const      \
   MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, STATE_SAVER_COUNTER), x);
+
+#endif // STATE_SAVER_HPP
