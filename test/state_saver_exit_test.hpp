@@ -25,10 +25,10 @@
 
 #include "test_case.hpp"
 
-TEST_CASE("state_saver_exit: called on scope leave " CASE_NAME) {
+TEST_CASE("saver_exit: called on scope leave " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
   };
@@ -40,10 +40,10 @@ TEST_CASE("state_saver_exit: called on scope leave " CASE_NAME) {
   REQUIRE(a.i == test_value);
 }
 
-TEST_CASE("state_saver_exit: called on error " CASE_NAME) {
+TEST_CASE("saver_exit: called on error " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     throw std::runtime_error{"error"};
@@ -56,13 +56,13 @@ TEST_CASE("state_saver_exit: called on error " CASE_NAME) {
   REQUIRE(a.i == test_value);
 }
 
-TEST_CASE("state_saver_exit: dismiss before scope leave " CASE_NAME) {
+TEST_CASE("saver_exit: dismiss before scope leave " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_exit.dismiss();
+    saver_exit.dismiss();
   };
 
   REQUIRE_NOTHROW([&]() {
@@ -72,13 +72,13 @@ TEST_CASE("state_saver_exit: dismiss before scope leave " CASE_NAME) {
   REQUIRE(a.i == other_test_value);
 }
 
-TEST_CASE("state_saver_exit: dismiss before error " CASE_NAME) {
+TEST_CASE("saver_exit: dismiss before error " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_exit.dismiss();
+    saver_exit.dismiss();
     throw std::runtime_error{"error"};
   };
 
@@ -89,14 +89,14 @@ TEST_CASE("state_saver_exit: dismiss before error " CASE_NAME) {
   REQUIRE(a.i == other_test_value);
 }
 
-TEST_CASE("state_saver_exit: called on error, dismiss after error " CASE_NAME) {
+TEST_CASE("saver_exit: called on error, dismiss after error " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     throw std::runtime_error{"error"};
-    state_saver_exit.dismiss();
+    saver_exit.dismiss();
   };
 
   REQUIRE_THROWS([&]() {
@@ -107,13 +107,13 @@ TEST_CASE("state_saver_exit: called on error, dismiss after error " CASE_NAME) {
 }
 
 #if CASE_NUMBER != 3
-TEST_CASE("state_saver_exit: restore " CASE_NAME) {
+TEST_CASE("saver_exit: restore " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_exit.restore();
+    saver_exit.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };
@@ -125,14 +125,14 @@ TEST_CASE("state_saver_exit: restore " CASE_NAME) {
   REQUIRE(a.i == test_value);
 }
 
-TEST_CASE("state_saver_exit: dismiss, restore " CASE_NAME) {
+TEST_CASE("saver_exit: dismiss, restore " CASE_NAME) {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    state_saver_exit<decltype(a)> state_saver_exit{a};
+    saver_exit<decltype(a)> saver_exit{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    state_saver_exit.dismiss();
-    state_saver_exit.restore();
+    saver_exit.dismiss();
+    saver_exit.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };

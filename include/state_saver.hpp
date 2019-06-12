@@ -201,35 +201,35 @@ class state_saver {
   T previous_value_;
 };
 
-} // namespace detail
+} // namespace state_saver::detail
 
 template <typename U>
-class state_saver_exit final : public detail::state_saver<U, detail::on_exit_policy> {
+class saver_exit final : public detail::state_saver<U, detail::on_exit_policy> {
  public:
   using detail::state_saver<U, detail::on_exit_policy>::state_saver;
 };
 
 template <typename U>
-class state_saver_fail final : public detail::state_saver<U, detail::on_fail_policy> {
+class saver_fail final : public detail::state_saver<U, detail::on_fail_policy> {
  public:
   using detail::state_saver<U, detail::on_fail_policy>::state_saver;
 };
 
 template <typename U>
-class state_saver_succes final : public detail::state_saver<U, detail::on_success_policy> {
+class saver_succes final : public detail::state_saver<U, detail::on_success_policy> {
  public:
   using detail::state_saver<U, detail::on_success_policy>::state_saver;
 };
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
 template <typename U>
-state_saver_exit(U&) -> state_saver_exit<U>;
+saver_exit(U&) -> saver_exit<U>;
 
 template <typename U>
-state_saver_fail(U&) -> state_saver_fail<U>;
+saver_fail(U&) -> saver_fail<U>;
 
 template <typename U>
-state_saver_succes(U&) -> state_saver_succes<U>;
+saver_succes(U&) -> saver_succes<U>;
 #endif
 
 } // namespace state_saver
@@ -268,22 +268,22 @@ state_saver_succes(U&) -> state_saver_succes<U>;
 #  define STATE_SAVER_COUNTER __LINE__
 #endif
 
-// STATE_SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
-#define MAKE_STATE_SAVER_EXIT(name, x) ::state_saver::state_saver_exit<decltype(x)> name{x};
-#define STATE_SAVER_EXIT(x) \
+// SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+#define MAKE_SAVER_EXIT(name, x) ::state_saver::saver_exit<decltype(x)> name{x};
+#define SAVER_EXIT(x) \
   ATTR_MAYBE_UNUSED const   \
-  MAKE_STATE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
+  MAKE_SAVER_EXIT(STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, STATE_SAVER_COUNTER), x);
 
-// STATE_SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
-#define MAKE_STATE_SAVER_FAIL(name, x) ::state_saver::state_saver_fail<decltype(x)> name{x};
-#define STATE_SAVER_FAIL(x) \
+// SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
+#define MAKE_SAVER_FAIL(name, x) ::state_saver::saver_fail<decltype(x)> name{x};
+#define SAVER_FAIL(x) \
   ATTR_MAYBE_UNUSED const   \
-  MAKE_STATE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
+  MAKE_SAVER_FAIL(STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, STATE_SAVER_COUNTER), x);
 
-// STATE_SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
-#define MAKE_STATE_SAVER_SUCCESS(name, x) ::state_saver::state_saver_succes<decltype(x)> name{x};
-#define STATE_SAVER_SUCCESS(x) \
+// SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
+#define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_succes<decltype(x)> name{x};
+#define SAVER_SUCCESS(x) \
   ATTR_MAYBE_UNUSED const      \
-  MAKE_STATE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, STATE_SAVER_COUNTER), x);
+  MAKE_SAVER_SUCCESS(STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, STATE_SAVER_COUNTER), x);
 
 #endif // NEARGYE_STATE_SAVER_HPP
