@@ -29,10 +29,10 @@
 #include <state_saver.hpp>
 using namespace state_saver;
 
-#if !defined(CASE_NAME)
+#if !defined(CASE_TEST)
 #  define CASE_NAME_STR_(x) #x
 #  define CASE_NAME_STR(x) CASE_NAME_STR_(x)
-#  define CASE_NAME CASE_NAME_STR(CASE_NUMBER)
+#  define CASE_TEST(name) TEST_CASE(STATE_SAVER_STR_CONCAT(name, STATE_SAVER_STR_CONCAT(" ", CASE_NAME_STR(CASE_NUMBER))))
 #endif
 
 #if !defined(test_class)

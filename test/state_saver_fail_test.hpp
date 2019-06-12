@@ -25,7 +25,7 @@
 
 #include "test_case.hpp"
 
-TEST_CASE("saver_fail: not called on scope leave " CASE_NAME) {
+CASE_TEST("saver_fail: not called on scope leave") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -40,7 +40,7 @@ TEST_CASE("saver_fail: not called on scope leave " CASE_NAME) {
   REQUIRE(a.i == other_test_value);
 }
 
-TEST_CASE("saver_fail: called on error " CASE_NAME) {
+CASE_TEST("saver_fail: called on error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -56,7 +56,7 @@ TEST_CASE("saver_fail: called on error " CASE_NAME) {
   REQUIRE(a.i == test_value);
 }
 
-TEST_CASE("saver_fail: dismiss before scope leave " CASE_NAME) {
+CASE_TEST("saver_fail: dismiss before scope leave") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -72,7 +72,7 @@ TEST_CASE("saver_fail: dismiss before scope leave " CASE_NAME) {
   REQUIRE(a.i == other_test_value);
 }
 
-TEST_CASE("saver_fail: dismiss before error " CASE_NAME) {
+CASE_TEST("saver_fail: dismiss before error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -89,7 +89,7 @@ TEST_CASE("saver_fail: dismiss before error " CASE_NAME) {
   REQUIRE(a.i == other_test_value);
 }
 
-TEST_CASE("saver_fail: called on error, dismiss after error " CASE_NAME) {
+CASE_TEST("saver_fail: called on error, dismiss after error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -107,7 +107,7 @@ TEST_CASE("saver_fail: called on error, dismiss after error " CASE_NAME) {
 }
 
 #if CASE_NUMBER != 3
-TEST_CASE("saver_fail: restore " CASE_NAME) {
+CASE_TEST("saver_fail: restore") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
@@ -129,7 +129,7 @@ TEST_CASE("saver_fail: restore " CASE_NAME) {
   }
 }
 
-TEST_CASE("saver_fail: dismiss, restore " CASE_NAME) {
+CASE_TEST("saver_fail: dismiss, restore") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
     saver_fail<decltype(a)> saver_fail{a};
