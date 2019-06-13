@@ -7,6 +7,7 @@
 |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 ```
 
+[![Github Releases](https://img.shields.io/github/release/Neargye/state_saver.svg)](https://github.com/Neargye/state_saver/releases)
 [![License](https://img.shields.io/github/license/Neargye/state_saver.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/Neargye/state_saver.svg?branch=master)](https://travis-ci.org/Neargye/state_saver)
 [![Build status](https://ci.appveyor.com/api/projects/status/64trm7iqd1a9gg6u/branch/master?svg=true)](https://ci.appveyor.com/project/Neargye/state-saver/branch/master)
