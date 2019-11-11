@@ -162,6 +162,9 @@ class state_saver {
   T& previous_ref_;
   T previous_value_;
 
+  void* operator new(std::size_t) = delete;
+  void operator delete(void*) = delete;
+
  public:
   state_saver() = delete;
   state_saver(const state_saver&) = delete;
