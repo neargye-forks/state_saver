@@ -56,7 +56,7 @@
 #  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
-#if defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
+#if defined(STATE_SAVER_SUPPRESS_EXCEPTIONS) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
 #  define STATE_SAVER_NOEXCEPT(...) noexcept
 #  define STATE_SAVER_TRY try {
 #  define STATE_SAVER_CATCH } catch (...) {}
