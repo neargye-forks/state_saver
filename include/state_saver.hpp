@@ -86,9 +86,10 @@ inline int uncaught_exceptions() noexcept {
 }
 #endif
 
-struct on_exit_policy final {
+class on_exit_policy {
   bool restore_{true};
 
+ public:
   void dismiss() noexcept {
     restore_ = false;
   }
@@ -98,9 +99,10 @@ struct on_exit_policy final {
   }
 };
 
-struct on_fail_policy final {
+class on_fail_policy {
   int ec_{uncaught_exceptions()};
 
+ public:
   void dismiss() noexcept {
     ec_ = -1;
   }
@@ -110,9 +112,10 @@ struct on_fail_policy final {
   }
 };
 
-struct on_success_policy final {
+class on_success_policy {
   int ec_{uncaught_exceptions()};
 
+ public:
   void dismiss() noexcept {
     ec_ = -1;
   }
@@ -170,7 +173,8 @@ class state_saver {
   state_saver(const T&) = delete;
 
   explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : previous_ref_{object},
+      : policy_{},
+        previous_ref_{object},
         previous_value_{object} {}
 
   void dismiss() noexcept {
@@ -203,19 +207,19 @@ class state_saver {
 } // namespace state_saver::detail
 
 template <typename U>
-class saver_exit final : public detail::state_saver<U, detail::on_exit_policy> {
+class saver_exit : public detail::state_saver<U, detail::on_exit_policy> {
  public:
   using detail::state_saver<U, detail::on_exit_policy>::state_saver;
 };
 
 template <typename U>
-class saver_fail final : public detail::state_saver<U, detail::on_fail_policy> {
+class saver_fail : public detail::state_saver<U, detail::on_fail_policy> {
  public:
   using detail::state_saver<U, detail::on_fail_policy>::state_saver;
 };
 
 template <typename U>
-class saver_succes final : public detail::state_saver<U, detail::on_success_policy> {
+class saver_succes : public detail::state_saver<U, detail::on_success_policy> {
  public:
   using detail::state_saver<U, detail::on_success_policy>::state_saver;
 };
