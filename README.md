@@ -32,34 +32,34 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 ## [Examples](example)
 
 * State Saver on exit
-```cpp
-void Foo(A& a)
-  SAVER_EXIT(a);
-  ... // Alter state from non-const functions.
-  ... // Other code.
-  // Original state automatically restored on scope exit.
-}
-```
+  ```cpp
+  void Foo(A& a)
+    SAVER_EXIT(a);
+    ... // Alter state from non-const functions.
+    ... // Other code.
+    // Original state automatically restored on scope exit.
+  }
+  ```
 
 * State Saver on fail
-```cpp
-void Foo(A& a)
-  SAVER_FAIL(a);
-  ... // Alter state from non-const functions.
-  ... // Other code.
-  // Original state automatically restored when an exception has been thrown.
-}
-```
+  ```cpp
+  void Foo(A& a)
+    SAVER_FAIL(a);
+    ... // Alter state from non-const functions.
+    ... // Other code.
+    // Original state automatically restored when an exception has been thrown.
+  }
+  ```
 
 * State Saver on succes
-```cpp
-void Foo(A& a)
-  SAVER_SUCCESS(a);
-  ... // Alter state from non-const functions.
-  ... // Other code.
-  // Original state automatically restored when no exceptions have been thrown.
-}
-```
+  ```cpp
+  void Foo(A& a)
+    SAVER_SUCCESS(a);
+    ... // Alter state from non-const functions.
+    ... // Other code.
+    // Original state automatically restored when no exceptions have been thrown.
+  }
+  ```
 
 ## Synopsis
 
