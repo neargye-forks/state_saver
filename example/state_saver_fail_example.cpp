@@ -89,6 +89,8 @@ void foo6(int& a) {
     throw std::runtime_error{"error"};
     // Original state will automatically restored, on error.
   }
+
+  std::cout << "foo6 a = " << a << std::endl;
 }
 
 int main() {

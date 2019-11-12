@@ -85,6 +85,8 @@ void foo6(int& a) {
     std::cout << "foo6 a = " << a << std::endl;
     // Original state will automatically restored, on scope leave.
   }
+
+  std::cout << "foo6 a = " << a << std::endl;
 }
 
 int main() {
