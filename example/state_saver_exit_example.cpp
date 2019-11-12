@@ -79,6 +79,14 @@ void foo5(int& a) {
   // Original state will not automatically restored, on scope leave.
 }
 
+void foo6(int& a) {
+  WITH_SAVER_EXIT(a) {
+    a = 1;
+    std::cout << "foo6 a = " << a << std::endl;
+    // Original state will automatically restored, on scope leave.
+  }
+}
+
 int main() {
   int a = 0;
   std::cout << "main a = " << a << std::endl;
@@ -98,6 +106,9 @@ int main() {
   std::cout << "main a = " << a << std::endl;
 
   foo5(a);
+  std::cout << "main a = " << a << std::endl;
+
+  foo6(a);
   std::cout << "main a = " << a << std::endl;
 
   return 0;

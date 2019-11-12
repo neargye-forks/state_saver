@@ -30,7 +30,7 @@ void foo1(int& a) {
 
   a = 1;
   std::cout << "foo1 a = " << a << std::endl;
- // Original state will automatically restored, on scope leave.
+ // Original state will automatically restored, on scope leave when no exceptions have been thrown.
 }
 
 void foo2(int& a) {
@@ -50,7 +50,7 @@ void foo3(int& a) {
 #endif
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;
-  // Original state will automatically restored, on scope leave.
+  // Original state will automatically restored, on scope leave when no exceptions have been thrown.
 }
 
 void foo4(int& a) {
@@ -61,8 +61,7 @@ void foo4(int& a) {
 
   state_saver.dismiss(); // Dismiss, state will not automatically restored.
   std::cout << "foo4 state_saver::dismiss" << std::endl;
-  // Original state will not automatically restored, on scope leave.
-}
+  // Original state will not automatically restored, on scope leave when no exceptions have been thrown.
 
 void foo5(int& a) {
   MAKE_SAVER_EXIT(state_saver, a); // Custom state saver  on succes.
@@ -76,7 +75,15 @@ void foo5(int& a) {
   state_saver.restore(); // Restore state.
   std::cout << "foo5 state_saver::restore" << std::endl;
   std::cout << "foo5 a = " << a << std::endl;
-  // Original state will not automatically restored, on scope leave.
+  // Original state will not automatically restored, on scope leave when no exceptions have been thrown.
+}
+
+void foo6(int& a) {
+  WITH_SAVER_SUCCESS(a) {
+    a = 1;
+    std::cout << "foo6 a = " << a << std::endl;
+    // Original state will automatically restored, on scope leave when no exceptions have been thrown.
+  }
 }
 
 int main() {
@@ -98,6 +105,9 @@ int main() {
   std::cout << "main a = " << a << std::endl;
 
   foo5(a);
+  std::cout << "main a = " << a << std::endl;
+
+  foo6(a);
   std::cout << "main a = " << a << std::endl;
 
   return 0;

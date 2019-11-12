@@ -39,7 +39,7 @@ void foo2(int& a) {
 
   a = 2;
   std::cout << "foo2 a = " << a << std::endl;
-  // Original state will not automatically restored, on scope leave.
+  // Original state will not automatically restored, on scope leave when no exceptions have been thrown.
 }
 
 void foo3(int& a) {
@@ -82,6 +82,15 @@ void foo5(int& a) {
   // Original state will not automatically restored, on error.
 }
 
+void foo6(int& a) {
+  WITH_SAVER_FAIL(a) {
+    a = 1;
+    std::cout << "foo6 a = " << a << std::endl;
+    throw std::runtime_error{"error"};
+    // Original state will automatically restored, on error.
+  }
+}
+
 int main() {
   int a = 0;
   std::cout << "main a = " << a << std::endl;
@@ -106,6 +115,11 @@ int main() {
 
   try {
   foo5(a);
+  } catch (...) {}
+  std::cout << "main a = " << a << std::endl;
+
+  try {
+  foo6(a);
   } catch (...) {}
   std::cout << "main a = " << a << std::endl;
 
