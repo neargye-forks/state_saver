@@ -271,16 +271,26 @@ saver_succes(U&) -> saver_succes<U>;
 #  define __STATE_SAVER_COUNTER __LINE__
 #endif
 
+#if __cplusplus >= 201703L || defined(_MSVC_LANG) && _MSVC_LANG >= 201703L
+#  define __STATE_SAVER_WITH(s) if (s; true)
+#else
+#  define __STATE_SAVER_WITH_IMPL(s, i) if (int i = 1) for (s; i; --i)
+#  define __STATE_SAVER_WITH(s) __STATE_SAVER_WITH_IMPL(s, __STATE_SAVER_STR_CONCAT(__state_saver_with_internal__object_, __STATE_SAVER_COUNTER))
+#endif
+
 // SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_EXIT(name, x) ::state_saver::saver_exit<decltype(x)> name{x}
 #define SAVER_EXIT(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_EXIT(__STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __STATE_SAVER_COUNTER), x)
+#define WITH_SAVER_EXIT(x) __STATE_SAVER_WITH(SAVER_EXIT(x))
 
 // SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_FAIL(name, x) ::state_saver::saver_fail<decltype(x)> name{x}
 #define SAVER_FAIL(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_FAIL(__STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __STATE_SAVER_COUNTER), x)
+#define WITH_SAVER_FAIL(x) __STATE_SAVER_WITH(SAVER_FAIL(x))
 
 // SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_succes<decltype(x)> name{x}
 #define SAVER_SUCCESS(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(__STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __STATE_SAVER_COUNTER), x)
+#define WITH_SAVER_SUCCESS(x) __STATE_SAVER_WITH(SAVER_SUCCESS(x))
 
 #endif // NEARGYE_STATE_SAVER_HPP
