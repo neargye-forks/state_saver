@@ -35,7 +35,7 @@ using namespace state_saver;
 #endif
 
 #if !defined(test_class)
-#  define test_class STATE_SAVER_STR_CONCAT(TEST_CLASS_NAME, CASE_NUMBER)
+#  define test_class __STATE_SAVER_STR_CONCAT(TEST_CLASS_NAME, CASE_NUMBER)
 #endif
 
 class test_class {

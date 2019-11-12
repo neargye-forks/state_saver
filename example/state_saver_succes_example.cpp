@@ -62,6 +62,7 @@ void foo4(int& a) {
   state_saver.dismiss(); // Dismiss, state will not automatically restored.
   std::cout << "foo4 state_saver::dismiss" << std::endl;
   // Original state will not automatically restored, on scope leave when no exceptions have been thrown.
+}
 
 void foo5(int& a) {
   MAKE_SAVER_EXIT(state_saver, a); // Custom state saver  on succes.
