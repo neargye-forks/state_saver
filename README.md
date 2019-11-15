@@ -63,6 +63,24 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 ## Synopsis
 
+### Reference
+
+* `SAVER_EXIT{object};`
+* `MAKE_SAVER_EXIT(name) {object};`
+* `WITH_SAVER_EXIT(object) {/*...*/};`
+
+* `SAVER_FAIL{object};`
+* `MAKE_SAVER_FAIL(name) {object};`
+* `WITH_SAVER_FAIL(object) {/*...*/};`
+
+* `SAVER_SUCCESS{object};`
+* `MAKE_SAVER_SUCCESS(name) {object};`
+* `WITH_SAVER_SUCCESS(object) {/*...*/};`
+
+* `saver_fail<T> state_saver{object};`
+* `saver_fail<T> state_saver{object};`
+* `saver_succes<T> state_saver{object};`
+
 ### Interface of state_saver
 
 * constructor `state_saver(T& object)` - construct state_saver with saved object.
@@ -74,8 +92,8 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 ### Requirements to saved object
 
 * POD or object semantic (cannot be reference, function, ...).
-* copy constructor.
-* operator = (no-throw one preferred).
+* Copy constructor.
+* operator= (no-throw one preferred).
 
 ### Configuration macros
 
