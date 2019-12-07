@@ -99,13 +99,15 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 #### Throwable settings:
 
-* `STATE_SAVER_MAY_EXCEPTIONS` define this to restore may throw exceptions.
+* `SCOPE_GUARD_NOTHROW_CONSTRUCTIBLE` define this to require nothrow constructible.
 
-* `STATE_SAVER_NO_EXCEPTIONS` define this to require noexcept restore.
+* `STATE_SAVER_MAY_THROW_RESTORE` define this to restore may throw exceptions.
 
-* `STATE_SAVER_SUPPRESS_EXCEPTIONS` define this to exceptions during restore will be suppressed.
+* `STATE_SAVER_NO_THROW_RESTORE` define this to require noexcept restore.
 
-* By default using `STATE_SAVER_MAY_EXCEPTIONS`.
+* `STATE_SAVER_SUPPRESS_THROW_RESTORE` define this to exceptions during restore will be suppressed.
+
+* By default using `STATE_SAVER_MAY_THROW_RESTORE`.
 
 #### Assignable settings:
 
