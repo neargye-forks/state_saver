@@ -40,25 +40,26 @@
 #endif
 
 // state_saver throwable settings:
-// STATE_SAVER_MAY_EXCEPTIONS restore may throw exceptions.
-// STATE_SAVER_NO_EXCEPTIONS requires noexcept restore.
-// STATE_SAVER_SUPPRESS_EXCEPTIONS exceptions during restore will be suppressed.
+// STATE_SAVER_NO_THROW_CONSTRUCTIBLE requires nothrow constructible action.
+// STATE_SAVER_MAY_THROW_RESTORE restore may throw exceptions.
+// STATE_SAVER_NO_THROW_RESTORE requires noexcept restore.
+// STATE_SAVER_SUPPRESS_THROW_RESTORE exceptions during restore will be suppressed.
 
 // state_saver assignable settings:
 // STATE_SAVER_FORCE_MOVE_ASSIGNABLE restore on scope exit will be move assigned.
 // STATE_SAVER_FORCE_COPY_ASSIGNABLE restore on scope exit will be copy assigned.
 
-#if !defined(STATE_SAVER_MAY_EXCEPTIONS) && !defined(STATE_SAVER_NO_EXCEPTIONS) && !defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)
-#  define STATE_SAVER_MAY_EXCEPTIONS
-#elif (defined(STATE_SAVER_MAY_EXCEPTIONS) + defined(STATE_SAVER_NO_EXCEPTIONS) + defined(STATE_SAVER_SUPPRESS_EXCEPTIONS)) > 1
-#  error Only one of STATE_SAVER_MAY_EXCEPTIONS and STATE_SAVER_NO_EXCEPTIONS and STATE_SAVER_SUPPRESS_EXCEPTIONS may be defined.
+#if !defined(STATE_SAVER_MAY_THROW_RESTORE) && !defined(STATE_SAVER_NO_THROW_RESTORE) && !defined(STATE_SAVER_SUPPRESS_THROW_RESTORE)
+#  define STATE_SAVER_MAY_THROW_RESTORE
+#elif (defined(STATE_SAVER_MAY_THROW_RESTORE) + defined(STATE_SAVER_NO_THROW_RESTORE) + defined(STATE_SAVER_SUPPRESS_THROW_RESTORE)) > 1
+#  error Only one of STATE_SAVER_MAY_THROW_RESTORE and STATE_SAVER_NO_THROW_RESTORE and STATE_SAVER_SUPPRESS_THROW_RESTORE may be defined.
 #endif
 
 #if (defined(STATE_SAVER_FORCE_MOVE_ASSIGNABLE) + defined(STATE_SAVER_FORCE_COPY_ASSIGNABLE)) > 1
 #  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
-#if defined(STATE_SAVER_SUPPRESS_EXCEPTIONS) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
 #  define __STATE_SAVER_NOEXCEPT(...) noexcept
 #  define __STATE_SAVER_TRY try {
 #  define __STATE_SAVER_CATCH } catch (...) {}
@@ -154,8 +155,18 @@ class state_saver {
                 "state_saver requires not function type.");
   static_assert(std::is_constructible<T, T&>::value,
                 "state_saver requires copy constructible.");
+  static_assert(std::is_assignable<T&, assignable_t>::value,
+                "state_saver requires operator=.");
   static_assert(std::is_same<P, on_exit_policy>::value || std::is_same<P, on_fail_policy>::value || std::is_same<P, on_success_policy>::value,
                 "state_saver requires on_exit_policy, on_fail_policy or on_success_policy.");
+#if defined(STATE_SAVER_NO_THROW_RESTORE)
+  static_assert(std::is_nothrow_assignable<T&, assignable_t>::value,
+                "state_saver requires noexcept operator=.");
+#endif
+#if defined(STATE_SAVER_NO_THROW_CONSTRUCTIBLE)
+  static_assert(std::is_nothrow_constructible<T, T&>::value,
+                "state_saver requires nothrow constructible.");
+#endif
 
   P policy_;
   T& previous_ref_;
@@ -185,7 +196,7 @@ class state_saver {
 
   void restore() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
     static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore requires copy operator=.");
-#if defined(STATE_SAVER_NO_EXCEPTIONS)
+#if defined(STATE_SAVER_NO_THROW_RESTORE)
     static_assert(std::is_nothrow_assignable<T&, T&>::value, "state_saver::restore requires noexcept copy operator=.");
 #endif
     __STATE_SAVER_TRY
@@ -194,10 +205,6 @@ class state_saver {
   }
 
   ~state_saver() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
-    static_assert(std::is_assignable<T&, assignable_t>::value, "state_saver requires operator=.");
-#if defined(STATE_SAVER_NO_EXCEPTIONS)
-    static_assert(std::is_nothrow_assignable<T&, assignable_t>::value, "state_saver requires noexcept operator=.");
-#endif
     if (policy_.should_restore()) {
       __STATE_SAVER_TRY
         previous_ref_ = static_cast<assignable_t>(previous_value_);
