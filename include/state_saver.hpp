@@ -194,7 +194,8 @@ class state_saver {
     policy_.dismiss();
   }
 
-  void restore() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) {
+  template <typename O = T>
+  auto restore() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) -> typename std::enable_if<std::is_same<T, O>::value && std::is_assignable<T&, O&>::value>::type {
     static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore requires copy operator=.");
 #if defined(STATE_SAVER_NO_THROW_RESTORE)
     static_assert(std::is_nothrow_assignable<T&, T&>::value, "state_saver::restore requires noexcept copy operator=.");
