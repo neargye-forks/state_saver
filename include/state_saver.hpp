@@ -32,6 +32,8 @@
 #ifndef NEARGYE_STATE_SAVER_HPP
 #define NEARGYE_STATE_SAVER_HPP
 
+#include <cstddef>
+#include <new>
 #include <type_traits>
 #if (defined(_MSC_VER) && _MSC_VER >= 1900) || ((defined(__clang__) || defined(__GNUC__)) && __cplusplus >= 201700L)
 #include <exception>
