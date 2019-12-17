@@ -124,8 +124,8 @@ You should add required file [state_saver.hpp](include/state_saver.hpp).
 ## Compiler compatibility
 
 * Clang/LLVM >= 5
-* Visual C++ >= 14 / Visual Studio >= 2015
-* Xcode >= 8
+* MSVC++ >= 14.0 / Visual Studio >= 2015
+* Xcode >= 9
 * GCC >= 5
 
 ## Licensed under the [MIT License](LICENSE)
