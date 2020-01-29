@@ -32,6 +32,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 ## [Examples](example)
 
 * State Saver on exit
+
   ```cpp
   void Foo(A& a)
     SAVER_EXIT(a);
@@ -42,6 +43,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
   ```
 
 * State Saver on fail
+
   ```cpp
   void Foo(A& a)
     SAVER_FAIL(a);
@@ -52,6 +54,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
   ```
 
 * State Saver on succes
+
   ```cpp
   void Foo(A& a)
     SAVER_SUCCESS(a);
@@ -97,7 +100,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 ### Configuration macros
 
-#### Throwable settings:
+#### Throwable settings
 
 * `SCOPE_GUARD_NOTHROW_CONSTRUCTIBLE` define this to require nothrow constructible.
 
@@ -109,7 +112,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 * By default using `STATE_SAVER_MAY_THROW_RESTORE`.
 
-#### Assignable settings:
+#### Assignable settings
 
 * `STATE_SAVER_FORCE_MOVE_ASSIGNABLE` define this to restore on scope exit will be move assigned.
 
