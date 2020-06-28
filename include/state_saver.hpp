@@ -73,60 +73,73 @@ namespace state_saver {
 
 namespace detail {
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(NEARGYE_SCOPE_GUARD_HPP)
+using ::scope_guard::detail::uncaught_exceptions;
+using ::scope_guard::detail::on_exit_policy;
+using ::scope_guard::detail::on_fail_policy;
+using ::scope_guard::detail::on_success_policy;
+#else
+#  if defined(_MSC_VER) && _MSC_VER < 1900
 inline int uncaught_exceptions() noexcept {
   return *(reinterpret_cast<int*>(static_cast<char*>(static_cast<void*>(_getptd())) + (sizeof(void*) == 8 ? 0x100 : 0x90)));
 }
-#elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
+#  elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
 struct __cxa_eh_globals;
 extern "C" __cxa_eh_globals* __cxa_get_globals() noexcept;
 inline int uncaught_exceptions() noexcept {
   return static_cast<int>(*(reinterpret_cast<unsigned int*>(static_cast<char*>(static_cast<void*>(__cxa_get_globals())) + sizeof(void*))));
 }
-#else
+#  else
 inline int uncaught_exceptions() noexcept {
   return std::uncaught_exceptions();
 }
-#endif
+#  endif
 
 class on_exit_policy {
-  bool restore_{true};
+  bool execute_;
 
  public:
+  explicit on_exit_policy(bool execute) noexcept : execute_{execute} {}
+
   void dismiss() noexcept {
-    restore_ = false;
+    execute_ = false;
   }
 
-  bool should_restore() const noexcept {
-    return restore_;
+  bool should_execute() const noexcept {
+    return execute_;
   }
 };
 
 class on_fail_policy {
-  int ec_{uncaught_exceptions()};
+  int ec_;
 
  public:
+  explicit on_fail_policy(bool execute) noexcept : ec_{execute ? uncaught_exceptions() : -1} {}
+
   void dismiss() noexcept {
     ec_ = -1;
   }
 
-  bool should_restore() const noexcept {
+  bool should_execute() const noexcept {
     return ec_ != -1 && ec_ < uncaught_exceptions();
   }
 };
 
 class on_success_policy {
-  int ec_{uncaught_exceptions()};
+  int ec_;
 
  public:
+  explicit on_success_policy(bool execute) noexcept : ec_{execute ? uncaught_exceptions() : -1} {}
+
   void dismiss() noexcept {
     ec_ = -1;
   }
 
-  bool should_restore() const noexcept {
+  bool should_execute() const noexcept {
     return ec_ != -1 && ec_ >= uncaught_exceptions();
   }
 };
+#endif
 
 template <typename U, typename P>
 class state_saver {
@@ -186,7 +199,7 @@ class state_saver {
   state_saver(const T&) = delete;
 
   explicit state_saver(T& object) noexcept(std::is_nothrow_constructible<T, T&>::value)
-      : policy_{},
+      : policy_{true},
         previous_ref_{object},
         previous_value_{object} {}
 
@@ -206,7 +219,7 @@ class state_saver {
   }
 
   ~state_saver() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
-    if (policy_.should_restore()) {
+    if (policy_.should_execute()) {
       __STATE_SAVER_TRY
         previous_ref_ = static_cast<assignable_t>(previous_value_);
       __STATE_SAVER_CATCH
