@@ -32,6 +32,10 @@
 #ifndef NEARGYE_STATE_SAVER_HPP
 #define NEARGYE_STATE_SAVER_HPP
 
+#define STATE_SAVER_MAJOR 0
+#define STATE_SAVER_MINOR 6
+#define STATE_SAVER_PATCH 0
+
 #include <cstddef>
 #include <new>
 #include <type_traits>
