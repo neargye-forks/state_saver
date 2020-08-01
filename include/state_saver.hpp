@@ -63,19 +63,19 @@
 #  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
-#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
-#  define __STATE_SAVER_NOEXCEPT(...) noexcept
-#  define __STATE_SAVER_TRY try {
-#  define __STATE_SAVER_CATCH } catch (...) {}
-#else
-#  define __STATE_SAVER_NOEXCEPT(...) noexcept(__VA_ARGS__)
-#  define __STATE_SAVER_TRY
-#  define __STATE_SAVER_CATCH
-#endif
-
 namespace state_saver {
 
 namespace detail {
+
+#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#  define NEARGYE_NOEXCEPT(...) noexcept
+#  define NEARGYE_TRY try {
+#  define NEARGYE_CATCH } catch (...) {}
+#else
+#  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
+#  define NEARGYE_TRY
+#  define NEARGYE_CATCH
+#endif
 
 #if defined(NEARGYE_SCOPE_GUARD_HPP)
 using ::scope_guard::detail::uncaught_exceptions;
@@ -212,24 +212,28 @@ class state_saver {
   }
 
   template <typename O = T>
-  auto restore() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) -> typename std::enable_if<std::is_same<T, O>::value && std::is_assignable<T&, O&>::value>::type {
+  auto restore() NEARGYE_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) -> typename std::enable_if<std::is_same<T, O>::value && std::is_assignable<T&, O&>::value>::type {
     static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore requires copy operator=.");
 #if defined(STATE_SAVER_NO_THROW_RESTORE)
     static_assert(std::is_nothrow_assignable<T&, T&>::value, "state_saver::restore requires noexcept copy operator=.");
 #endif
-    __STATE_SAVER_TRY
+    NEARGYE_TRY
       previous_ref_ = previous_value_;
-    __STATE_SAVER_CATCH
+    NEARGYE_CATCH
   }
 
-  ~state_saver() __STATE_SAVER_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
+  ~state_saver() NEARGYE_NOEXCEPT(std::is_nothrow_assignable<T&, assignable_t>::value) {
     if (policy_.should_execute()) {
-      __STATE_SAVER_TRY
+      NEARGYE_TRY
         previous_ref_ = static_cast<assignable_t>(previous_value_);
-      __STATE_SAVER_CATCH
+      NEARGYE_CATCH
     }
   }
 };
+
+#undef NEARGYE_NOEXCEPT
+#undef NEARGYE_TRY
+#undef NEARGYE_CATCH
 
 } // namespace state_saver::detail
 
@@ -264,60 +268,64 @@ saver_succes(U&) -> saver_succes<U>;
 
 } // namespace state_saver
 
-// ATTR_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
-#if !defined(ATTR_MAYBE_UNUSED)
+// NEARGYE_MAYBE_UNUSED suppresses compiler warnings on unused entities, if any.
+#if !defined(NEARGYE_MAYBE_UNUSED)
 #  if defined(__clang__)
 #    if (__clang_major__ * 10 + __clang_minor__) >= 39 && __cplusplus >= 201703L
-#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
+#      define NEARGYE_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
+#      define NEARGYE_MAYBE_UNUSED __attribute__((__unused__))
 #    endif
 #  elif defined(__GNUC__)
 #    if __GNUC__ >= 7 && __cplusplus >= 201703L
-#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
+#      define NEARGYE_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define ATTR_MAYBE_UNUSED __attribute__((__unused__))
+#      define NEARGYE_MAYBE_UNUSED __attribute__((__unused__))
 #    endif
 #  elif defined(_MSC_VER)
 #    if _MSC_VER >= 1911 && defined(_MSVC_LANG) && _MSVC_LANG >= 201703L
-#      define ATTR_MAYBE_UNUSED [[maybe_unused]]
+#      define NEARGYE_MAYBE_UNUSED [[maybe_unused]]
 #    else
-#      define ATTR_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
+#      define NEARGYE_MAYBE_UNUSED __pragma(warning(suppress : 4100 4101 4189))
 #    endif
 #  else
-#    define ATTR_MAYBE_UNUSED
+#    define NEARGYE_MAYBE_UNUSED
 #  endif
 #endif
 
-#define __STATE_SAVER_STR_CONCAT_IMPL(s1, s2) s1##s2
-#define __STATE_SAVER_STR_CONCAT(s1, s2) __STATE_SAVER_STR_CONCAT_IMPL(s1, s2)
+#if !defined(NEARGYE_STR_CONCAT)
+#  define NEARGYE_STR_CONCAT_IMPL(s1, s2) s1##s2
+#  define NEARGYE_STR_CONCAT(s1, s2) NEARGYE_STR_CONCAT_IMPL(s1, s2)
+#endif
 
-#if defined(__COUNTER__)
-#  define __STATE_SAVER_COUNTER __COUNTER__
-#elif defined(__LINE__)
-#  define __STATE_SAVER_COUNTER __LINE__
+#if !defined(NEARGYE_COUNTER)
+#  if defined(__COUNTER__)
+#    define NEARGYE_COUNTER __COUNTER__
+#  elif defined(__LINE__)
+#    define NEARGYE_COUNTER __LINE__
+#  endif
 #endif
 
 #if __cplusplus >= 201703L || defined(_MSVC_LANG) && _MSVC_LANG >= 201703L
-#  define __STATE_SAVER_WITH(s) if (s; true)
+#  define NEARGYE_STATE_SAVER_WITH(s) if (s; true)
 #else
-#  define __STATE_SAVER_WITH_IMPL(s, i) if (int i = 1) for (s; i; --i)
-#  define __STATE_SAVER_WITH(s) __STATE_SAVER_WITH_IMPL(s, __STATE_SAVER_STR_CONCAT(__state_saver_with_internal__object_, __STATE_SAVER_COUNTER))
+#  define NEARGYE_STATE_SAVER_WITH_IMPL(s, i) if (int i = 1) for (s; i; --i)
+#  define NEARGYE_STATE_SAVER_WITH(s) NEARGYE_STATE_SAVER_WITH_IMPL(s, NEARGYE_STR_CONCAT(WITH_INTERNAL_OBJECT_, NEARGYE_COUNTER))
 #endif
 
 // SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_EXIT(name, x) ::state_saver::saver_exit<decltype(x)> name{x}
-#define SAVER_EXIT(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_EXIT(__STATE_SAVER_STR_CONCAT(__state_saver_exit__object_, __STATE_SAVER_COUNTER), x)
-#define WITH_SAVER_EXIT(x) __STATE_SAVER_WITH(SAVER_EXIT(x))
+#define SAVER_EXIT(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_EXIT(NEARGYE_STR_CONCAT(SAVER_EXIT_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_EXIT(x) NEARGYE_STATE_SAVER_WITH(SAVER_EXIT(x))
 
 // SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_FAIL(name, x) ::state_saver::saver_fail<decltype(x)> name{x}
-#define SAVER_FAIL(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_FAIL(__STATE_SAVER_STR_CONCAT(__state_saver_fail__object_, __STATE_SAVER_COUNTER), x)
-#define WITH_SAVER_FAIL(x) __STATE_SAVER_WITH(SAVER_FAIL(x))
+#define SAVER_FAIL(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_FAIL(NEARGYE_STR_CONCAT(SAVER_FAIL_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_FAIL(x) NEARGYE_STATE_SAVER_WITH(SAVER_FAIL(x))
 
 // SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
 #define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_succes<decltype(x)> name{x}
-#define SAVER_SUCCESS(x) ATTR_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(__STATE_SAVER_STR_CONCAT(__state_saver_succes__object_, __STATE_SAVER_COUNTER), x)
-#define WITH_SAVER_SUCCESS(x) __STATE_SAVER_WITH(SAVER_SUCCESS(x))
+#define SAVER_SUCCESS(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(NEARGYE_STR_CONCAT(SAVER_SUCCES_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_SUCCESS(x) NEARGYE_STATE_SAVER_WITH(SAVER_SUCCESS(x))
 
 #endif // NEARGYE_STATE_SAVER_HPP
