@@ -17,11 +17,11 @@
 
 Sometimes a certain value has to change only for a limited scope. This class wrapper saves a copy of the current state of some object, and resets the object’s state at destruction time, undoing any change the object may have gone through.
 
-* saver_exit - saves the original variable value and restores on scope exit, undoes any changes that could occur to the object.
+* saver_exit - saves the original variable value and restores on scope exit.
 
-* saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occur to the object.
+* saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown.
 
-* saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occur to the object.
+* saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown.
 
 ## Features
 
@@ -31,7 +31,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 ## [Examples](example)
 
-* State Saver on exit
+* [State Saver on exit](example/state_saver_exit_example.cpp)
 
   ```cpp
   void Foo(A& a)
@@ -42,7 +42,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
   }
   ```
 
-* State Saver on fail
+* [State Saver on fail](example/state_saver_fail_example.cpp)
 
   ```cpp
   void Foo(A& a)
@@ -53,7 +53,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
   }
   ```
 
-* State Saver on succes
+* [State Saver on succes](example/state_saver_succes_example.cpp)
 
   ```cpp
   void Foo(A& a)
@@ -68,23 +68,30 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 ### Reference
 
-* `SAVER_EXIT{object};`
-* `MAKE_SAVER_EXIT(name) {object};`
-* `WITH_SAVER_EXIT(object) {/*...*/};`
+#### saver_exit
 
-* `SAVER_FAIL{object};`
-* `MAKE_SAVER_FAIL(name) {object};`
-* `WITH_SAVER_FAIL(object) {/*...*/};`
+* `saver_exit<decltype(object)> state_saver{object};` - creation saver_exit for the object.
+* `SAVER_EXIT{object};` - macro for creating saver_exit for the object.
+* `MAKE_SAVER_EXIT(name) {object};` - macro for creating named saver_exit for the object.
+* `WITH_SAVER_EXIT(object) {/*...*/};` - macro for creating scope with saver_exit for the object.
 
-* `SAVER_SUCCESS{object};`
-* `MAKE_SAVER_SUCCESS(name) {object};`
-* `WITH_SAVER_SUCCESS(object) {/*...*/};`
+#### saver_fail
 
-* `saver_fail<T> state_saver{object};`
-* `saver_fail<T> state_saver{object};`
-* `saver_succes<T> state_saver{object};`
+* `saver_fail<decltype(object)> state_saver{object};` - creation saver_fail for the object.
+* `SAVER_FAIL{object};` - macro for creating saver_fail for the object.
+* `MAKE_SAVER_FAIL(name) {object};` - macro for creating scope with saver_fail for the object.
+* `WITH_SAVER_FAIL(object) {/*...*/};` - macro for creating scope with saver_fail for the object.
+
+#### saver_succes
+
+* `saver_succes<decltype(object)> state_saver{object};` - creation saver_succes for the object.
+* `SAVER_SUCCESS{object};` - macro for creating saver_succes for the object.
+* `MAKE_SAVER_SUCCESS(name) {object};` - macro for creating scope with saver_succes for the object.
+* `WITH_SAVER_SUCCESS(object) {/*...*/};` - macro for creating scope with saver_succes for the object.
 
 ### Interface of state_saver
+
+saver_exit, saver_fail, saver_succes implement state_saver interface.
 
 * constructor `state_saver(T& object)` - construct state_saver with saved object.
 

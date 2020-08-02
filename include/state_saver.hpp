@@ -313,17 +313,17 @@ saver_succes(U&) -> saver_succes<U>;
 #  define NEARGYE_STATE_SAVER_WITH(s) NEARGYE_STATE_SAVER_WITH_IMPL(s, NEARGYE_STR_CONCAT(WITH_INTERNAL_OBJECT_, NEARGYE_COUNTER))
 #endif
 
-// SAVER_EXIT saves the origin variable value and restores on scope exit, undoes any changes that could occure to the object.
+// SAVER_EXIT saves the original variable value and restores on scope exit.
 #define MAKE_SAVER_EXIT(name, x) ::state_saver::saver_exit<decltype(x)> name{x}
 #define SAVER_EXIT(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_EXIT(NEARGYE_STR_CONCAT(SAVER_EXIT_, NEARGYE_COUNTER), x)
 #define WITH_SAVER_EXIT(x) NEARGYE_STATE_SAVER_WITH(SAVER_EXIT(x))
 
-// SAVER_FAIL saves the origin variable value and restores on scope exit when an exception has been thrown before scope exit, undoes any changes that could occure to the object.
+// SAVER_FAIL saves the original variable value and restores on scope exit when an exception has been thrown.
 #define MAKE_SAVER_FAIL(name, x) ::state_saver::saver_fail<decltype(x)> name{x}
 #define SAVER_FAIL(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_FAIL(NEARGYE_STR_CONCAT(SAVER_FAIL_, NEARGYE_COUNTER), x)
 #define WITH_SAVER_FAIL(x) NEARGYE_STATE_SAVER_WITH(SAVER_FAIL(x))
 
-// SAVER_SUCCESS saves the origin variable value and restores on scope exit when no exceptions have been thrown before scope exit, undoes any changes that could occure to the object.
+// SAVER_SUCCESS saves the original variable value and restores on scope exit when no exceptions have been thrown.
 #define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_succes<decltype(x)> name{x}
 #define SAVER_SUCCESS(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(NEARGYE_STR_CONCAT(SAVER_SUCCES_, NEARGYE_COUNTER), x)
 #define WITH_SAVER_SUCCESS(x) NEARGYE_STATE_SAVER_WITH(SAVER_SUCCESS(x))
