@@ -48,6 +48,7 @@
 // STATE_SAVER_MAY_THROW_RESTORE restore may throw exceptions.
 // STATE_SAVER_NO_THROW_RESTORE requires noexcept restore.
 // STATE_SAVER_SUPPRESS_THROW_RESTORE exceptions during restore will be suppressed.
+// STATE_SAVER_CATCH_HANDLER exceptions handler.
 
 // state_saver assignable settings:
 // STATE_SAVER_FORCE_MOVE_ASSIGNABLE restore on scope exit will be move assigned.
@@ -63,6 +64,10 @@
 #  error Only one of STATE_SAVER_FORCE_MOVE_ASSIGNABLE and STATE_SAVER_FORCE_COPY_ASSIGNABLE may be defined.
 #endif
 
+#if !defined(STATE_SAVER_CATCH_HANDLER)
+#  define STATE_SAVER_CATCH_HANDLER /* Suppress exception. */
+#endif
+
 namespace state_saver {
 
 namespace detail {
@@ -70,7 +75,7 @@ namespace detail {
 #if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
 #  define NEARGYE_NOEXCEPT(...) noexcept
 #  define NEARGYE_TRY try {
-#  define NEARGYE_CATCH } catch (...) {}
+#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
 #else
 #  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
 #  define NEARGYE_TRY

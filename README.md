@@ -109,7 +109,7 @@ saver_exit, saver_fail, saver_succes implement state_saver interface.
 
 #### Throwable settings
 
-* `SCOPE_GUARD_NOTHROW_CONSTRUCTIBLE` define this to require nothrow constructible.
+* `STATE_SAVER_NO_THROW_CONSTRUCTIBLE` define this to require nothrow constructible.
 
 * `STATE_SAVER_MAY_THROW_RESTORE` define this to restore may throw exceptions.
 
@@ -118,6 +118,8 @@ saver_exit, saver_fail, saver_succes implement state_saver interface.
 * `STATE_SAVER_SUPPRESS_THROW_RESTORE` define this to exceptions during restore will be suppressed.
 
 * By default using `STATE_SAVER_MAY_THROW_RESTORE`.
+
+* `STATE_SAVER_CATCH_HANDLER` define this to add exceptions handler. If `STATE_SAVER_SUPPRESS_THROW_RESTORE` is not defined, it will do nothing.
 
 #### Assignable settings
 
