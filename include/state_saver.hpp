@@ -217,10 +217,10 @@ class state_saver {
   }
 
   template <typename O = T>
-  auto restore() NEARGYE_NOEXCEPT(std::is_nothrow_assignable<T&, T&>::value) -> typename std::enable_if<std::is_same<T, O>::value && std::is_assignable<T&, O&>::value>::type {
-    static_assert(std::is_assignable<T&, T&>::value, "state_saver::restore requires copy operator=.");
+  auto restore() NEARGYE_NOEXCEPT(std::is_nothrow_assignable<O&, O&>::value) -> typename std::enable_if<std::is_same<T, O>::value && std::is_assignable<O&, O&>::value>::type {
+    static_assert(std::is_assignable<O&, O&>::value, "state_saver::restore requires copy operator=.");
 #if defined(STATE_SAVER_NO_THROW_RESTORE)
-    static_assert(std::is_nothrow_assignable<T&, T&>::value, "state_saver::restore requires noexcept copy operator=.");
+    static_assert(std::is_nothrow_assignable<O&, O&>::value, "state_saver::restore requires noexcept copy operator=.");
 #endif
     NEARGYE_TRY
       previous_ref_ = previous_value_;
