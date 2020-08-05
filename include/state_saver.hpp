@@ -68,26 +68,11 @@
 #  define STATE_SAVER_CATCH_HANDLER /* Suppress exception. */
 #endif
 
-namespace state_saver {
+#if !defined(NEARGYE_SCOPE_POLICY)
+#  define NEARGYE_SCOPE_POLICY 1
+namespace neargye {
+namespace scope_policy {
 
-namespace detail {
-
-#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
-#  define NEARGYE_NOEXCEPT(...) noexcept
-#  define NEARGYE_TRY try {
-#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
-#else
-#  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
-#  define NEARGYE_TRY
-#  define NEARGYE_CATCH
-#endif
-
-#if defined(NEARGYE_SCOPE_GUARD_HPP)
-using ::scope_guard::detail::uncaught_exceptions;
-using ::scope_guard::detail::on_exit_policy;
-using ::scope_guard::detail::on_fail_policy;
-using ::scope_guard::detail::on_success_policy;
-#else
 class on_exit_policy {
   bool execute_;
 
@@ -148,7 +133,29 @@ class on_success_policy {
     return ec_ != -1 && ec_ >= uncaught_exceptions();
   }
 };
+
+} // namespace neargye::scope_policy
+} // namespace neargye
 #endif
+
+namespace state_saver {
+
+namespace detail {
+
+#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#  define NEARGYE_NOEXCEPT(...) noexcept
+#  define NEARGYE_TRY try {
+#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
+#else
+#  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
+#  define NEARGYE_TRY
+#  define NEARGYE_CATCH
+#endif
+
+using ::neargye::scope_policy::uncaught_exceptions;
+using ::neargye::scope_policy::on_exit_policy;
+using ::neargye::scope_policy::on_fail_policy;
+using ::neargye::scope_policy::on_success_policy;
 
 template <typename U, typename P>
 class state_saver {
