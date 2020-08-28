@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// version 0.7.0
+// version 0.8.0
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -33,7 +33,7 @@
 #define NEARGYE_STATE_SAVER_HPP
 
 #define STATE_SAVER_VERSION_MAJOR 0
-#define STATE_SAVER_VERSION_MINOR 7
+#define STATE_SAVER_VERSION_MINOR 8
 #define STATE_SAVER_VERSION_PATCH 0
 
 #include <cstddef>
@@ -48,7 +48,7 @@
 // STATE_SAVER_MAY_THROW_RESTORE restore may throw exceptions.
 // STATE_SAVER_NO_THROW_RESTORE requires noexcept restore.
 // STATE_SAVER_SUPPRESS_THROW_RESTORE exceptions during restore will be suppressed.
-// STATE_SAVER_CATCH_HANDLER exceptions handler.
+// STATE_SAVER_CATCH_HANDLER exceptions handler. If STATE_SAVER_SUPPRESS_THROW_RESTORE is not defined, it will do nothing.
 
 // state_saver assignable settings:
 // STATE_SAVER_FORCE_MOVE_ASSIGNABLE restore on scope exit will be move assigned.
@@ -65,28 +65,22 @@
 #endif
 
 #if !defined(STATE_SAVER_CATCH_HANDLER)
-#  define STATE_SAVER_CATCH_HANDLER /* Suppress exception. */
+#  define STATE_SAVER_CATCH_HANDLER /* Suppress exception.*/
 #endif
 
-#if !defined(NEARGYE_SCOPE_POLICY)
-#  define NEARGYE_SCOPE_POLICY 1
-namespace neargye {
+namespace state_saver {
+
 namespace detail {
 
-class on_exit_policy {
-  bool execute_;
-
- public:
-  explicit on_exit_policy(bool execute) noexcept : execute_{execute} {}
-
-  void dismiss() noexcept {
-    execute_ = false;
-  }
-
-  bool should_execute() const noexcept {
-    return execute_;
-  }
-};
+#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#  define NEARGYE_NOEXCEPT(...) noexcept
+#  define NEARGYE_TRY try {
+#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
+#else
+#  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
+#  define NEARGYE_TRY
+#  define NEARGYE_CATCH
+#endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 inline int uncaught_exceptions() noexcept {
@@ -103,6 +97,21 @@ inline int uncaught_exceptions() noexcept {
   return std::uncaught_exceptions();
 }
 #endif
+
+class on_exit_policy {
+  bool execute_;
+
+ public:
+  explicit on_exit_policy(bool execute) noexcept : execute_{execute} {}
+
+  void dismiss() noexcept {
+    execute_ = false;
+  }
+
+  bool should_execute() const noexcept {
+    return execute_;
+  }
+};
 
 class on_fail_policy {
   int ec_;
@@ -133,29 +142,6 @@ class on_success_policy {
     return ec_ != -1 && ec_ >= uncaught_exceptions();
   }
 };
-
-} // namespace neargye::detail
-} // namespace neargye
-#endif
-
-namespace state_saver {
-
-namespace detail {
-
-#if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
-#  define NEARGYE_NOEXCEPT(...) noexcept
-#  define NEARGYE_TRY try {
-#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
-#else
-#  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
-#  define NEARGYE_TRY
-#  define NEARGYE_CATCH
-#endif
-
-using ::neargye::detail::uncaught_exceptions;
-using ::neargye::detail::on_exit_policy;
-using ::neargye::detail::on_fail_policy;
-using ::neargye::detail::on_success_policy;
 
 template <typename U, typename P>
 class state_saver {
