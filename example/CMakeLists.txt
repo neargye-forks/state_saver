@@ -2,7 +2,7 @@
 
 if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     set(CMAKE_VERBOSE_MAKEFILE ON)
-    set(OPTIONS -Wall -Wextra -pedantic-errors -Werror -std=c++11)
+    set(OPTIONS -Wall -Wextra -pedantic-errors -Werror)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(OPTIONS /W4 /WX)
     check_cxx_compiler_flag(/permissive HAS_PERMISSIVE_FLAG)
@@ -12,20 +12,15 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(OPTIONS ${OPTIONS} /wd4702) # Disable warning C4702: unreachable code
 endif()
 
-add_executable(state_saver_exit_example
-                    state_saver_exit_example.cpp
-                    ${CMAKE_SOURCE_DIR}/include/${CMAKE_PROJECT_NAME}.hpp)
-target_compile_options(state_saver_exit_example PRIVATE ${OPTIONS})
-target_link_libraries(state_saver_exit_example PRIVATE ${CMAKE_PROJECT_NAME})
+function(make_example target)
+    add_executable(${target} ${target}.cpp ${CMAKE_SOURCE_DIR}/include/${CMAKE_PROJECT_NAME}.hpp)
+    set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
+    target_compile_features(${target} PRIVATE cxx_std_11)
+    target_compile_options(${target} PRIVATE ${OPTIONS})
+    target_link_libraries(${target} PRIVATE ${CMAKE_PROJECT_NAME})
+endfunction()
 
-add_executable(state_saver_fail_example
-                    state_saver_fail_example.cpp
-                    ${CMAKE_SOURCE_DIR}/include/${CMAKE_PROJECT_NAME}.hpp)
-target_compile_options(state_saver_fail_example PRIVATE ${OPTIONS})
-target_link_libraries(state_saver_fail_example PRIVATE ${CMAKE_PROJECT_NAME})
+make_example(state_saver_exit_example)
+make_example(state_saver_fail_example)
+make_example(state_saver_succes_example)
 
-add_executable(state_saver_succes_example
-                    state_saver_succes_example.cpp
-                    ${CMAKE_SOURCE_DIR}/include/${CMAKE_PROJECT_NAME}.hpp)
-target_compile_options(state_saver_succes_example PRIVATE ${OPTIONS})
-target_link_libraries(state_saver_succes_example PRIVATE ${CMAKE_PROJECT_NAME})
