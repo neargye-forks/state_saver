@@ -36,8 +36,6 @@
 #define STATE_SAVER_VERSION_MINOR 8
 #define STATE_SAVER_VERSION_PATCH 0
 
-#include <cstddef>
-#include <new>
 #include <type_traits>
 #if (defined(_MSC_VER) && _MSC_VER >= 1900) || ((defined(__clang__) || defined(__GNUC__)) && __cplusplus >= 201700L)
 #include <exception>
@@ -187,9 +185,6 @@ class state_saver {
   T& previous_ref_;
   T previous_value_;
 
-  void* operator new(std::size_t) = delete;
-  void operator delete(void*) = delete;
-
  public:
   state_saver() = delete;
   state_saver(const state_saver&) = delete;
@@ -248,7 +243,7 @@ class saver_fail : public detail::state_saver<U, detail::on_fail_policy> {
 };
 
 template <typename U>
-class saver_succes : public detail::state_saver<U, detail::on_success_policy> {
+class saver_success : public detail::state_saver<U, detail::on_success_policy> {
  public:
   using detail::state_saver<U, detail::on_success_policy>::state_saver;
 };
@@ -261,7 +256,7 @@ template <typename U>
 saver_fail(U&) -> saver_fail<U>;
 
 template <typename U>
-saver_succes(U&) -> saver_succes<U>;
+saver_success(U&) -> saver_success<U>;
 #endif
 
 } // namespace state_saver
@@ -322,7 +317,7 @@ saver_succes(U&) -> saver_succes<U>;
 #define WITH_SAVER_FAIL(x) NEARGYE_STATE_SAVER_WITH(SAVER_FAIL(x))
 
 // SAVER_SUCCESS saves the original variable value and restores on scope exit when no exceptions have been thrown.
-#define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_succes<decltype(x)> name{x}
+#define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_success<decltype(x)> name{x}
 #define SAVER_SUCCESS(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(NEARGYE_STR_CONCAT(SAVER_SUCCES_, NEARGYE_COUNTER), x)
 #define WITH_SAVER_SUCCESS(x) NEARGYE_STATE_SAVER_WITH(SAVER_SUCCESS(x))
 

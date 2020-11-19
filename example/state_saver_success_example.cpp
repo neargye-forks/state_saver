@@ -26,7 +26,7 @@
 #include <stdexcept>
 
 void foo1(int& a) {
-  SAVER_SUCCESS(a); // State saver on succes.
+  SAVER_SUCCESS(a); // State saver on success.
 
   a = 1;
   std::cout << "foo1 a = " << a << std::endl;
@@ -34,7 +34,7 @@ void foo1(int& a) {
 }
 
 void foo2(int& a) {
-  SAVER_SUCCESS(a); // Custom state saver on succes.
+  SAVER_SUCCESS(a); // Custom state saver on success.
 
   a = 2;
   std::cout << "foo2 a = " << a << std::endl;
@@ -44,9 +44,9 @@ void foo2(int& a) {
 
 void foo3(int& a) {
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201611L
-  state_saver::saver_succes state_saver{a}; // Custom state saver on succes, without macros.
+  state_saver::saver_success state_saver{a}; // Custom state saver on success, without macros.
 #else
-  state_saver::saver_succes<decltype(a)> state_saver{a}; // Custom state saver on succes, without macros.
+  state_saver::saver_success<decltype(a)> state_saver{a}; // Custom state saver on success, without macros.
 #endif
   a = 3;
   std::cout << "foo3 a = " << a << std::endl;
@@ -54,7 +54,7 @@ void foo3(int& a) {
 }
 
 void foo4(int& a) {
-  MAKE_SAVER_EXIT(state_saver, a); // Custom state saver  on succes.
+  MAKE_SAVER_EXIT(state_saver, a); // Custom state saver on success.
 
   a = 4;
   std::cout << "foo4 a = " << a << std::endl;
@@ -65,7 +65,7 @@ void foo4(int& a) {
 }
 
 void foo5(int& a) {
-  MAKE_SAVER_EXIT(state_saver, a); // Custom state saver  on succes.
+  MAKE_SAVER_EXIT(state_saver, a); // Custom state saver on success.
 
   a = 5;
   std::cout << "foo5 a = " << a << std::endl;

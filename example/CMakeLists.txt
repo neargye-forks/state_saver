@@ -22,5 +22,5 @@ endfunction()
 
 make_example(state_saver_exit_example)
 make_example(state_saver_fail_example)
-make_example(state_saver_succes_example)
+make_example(state_saver_success_example)
 

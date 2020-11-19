@@ -21,7 +21,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 
 * saver_fail - saves the original variable value and restores on scope exit when an exception has been thrown.
 
-* saver_succes - saves the original variable value and restores on scope exit when no exceptions have been thrown.
+* saver_success - saves the original variable value and restores on scope exit when no exceptions have been thrown.
 
 ## Features
 
@@ -53,7 +53,7 @@ Sometimes a certain value has to change only for a limited scope. This class wra
   }
   ```
 
-* [State Saver on succes](example/state_saver_succes_example.cpp)
+* [State Saver on success](example/state_saver_success_example.cpp)
 
   ```cpp
   void Foo(A& a)
@@ -82,16 +82,16 @@ Sometimes a certain value has to change only for a limited scope. This class wra
 * `MAKE_SAVER_FAIL(name) {object};` - macro for creating scope with saver_fail for the object.
 * `WITH_SAVER_FAIL(object) {/*...*/};` - macro for creating scope with saver_fail for the object.
 
-#### saver_succes
+#### saver_success
 
-* `saver_succes<decltype(object)> state_saver{object};` - creation saver_succes for the object.
-* `SAVER_SUCCESS{object};` - macro for creating saver_succes for the object.
-* `MAKE_SAVER_SUCCESS(name) {object};` - macro for creating scope with saver_succes for the object.
-* `WITH_SAVER_SUCCESS(object) {/*...*/};` - macro for creating scope with saver_succes for the object.
+* `saver_success<decltype(object)> state_saver{object};` - creation saver_success for the object.
+* `SAVER_SUCCESS{object};` - macro for creating saver_success for the object.
+* `MAKE_SAVER_SUCCESS(name) {object};` - macro for creating scope with saver_success for the object.
+* `WITH_SAVER_SUCCESS(object) {/*...*/};` - macro for creating scope with saver_success for the object.
 
 ### Interface of state_saver
 
-saver_exit, saver_fail, saver_succes implement state_saver interface.
+saver_exit, saver_fail, saver_success implement state_saver interface.
 
 * constructor `state_saver(T& object)` - construct state_saver with saved object.
 

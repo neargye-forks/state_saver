@@ -22,30 +22,30 @@
 
 #define CASE_NUMBER 1
 #include "state_saver_exit_test.hpp"
-#include "state_saver_succes_test.hpp"
+#include "state_saver_success_test.hpp"
 #include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 2
 #include "state_saver_exit_test.hpp"
-#include "state_saver_succes_test.hpp"
+#include "state_saver_success_test.hpp"
 #include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 3
 #include "state_saver_exit_test.hpp"
-#include "state_saver_succes_test.hpp"
+#include "state_saver_success_test.hpp"
 #include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 4
 #include "state_saver_exit_test.hpp"
-#include "state_saver_succes_test.hpp"
+#include "state_saver_success_test.hpp"
 #include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER
 
 #define CASE_NUMBER 5
 #include "state_saver_exit_test.hpp"
-#include "state_saver_succes_test.hpp"
+#include "state_saver_success_test.hpp"
 #include "state_saver_fail_test.hpp"
 #undef CASE_NUMBER

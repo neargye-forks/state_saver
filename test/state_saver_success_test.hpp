@@ -28,7 +28,7 @@
 CASE_TEST("state_saver_success: called on scope leave") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
   };
@@ -43,7 +43,7 @@ CASE_TEST("state_saver_success: called on scope leave") {
 CASE_TEST("state_saver_success: not called on error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     throw std::runtime_error{"error"};
@@ -59,10 +59,10 @@ CASE_TEST("state_saver_success: not called on error") {
 CASE_TEST("state_saver_success: dismiss before scope leave") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    saver_succes.dismiss();
+    saver_success.dismiss();
   };
 
   REQUIRE_NOTHROW([&]() {
@@ -75,10 +75,10 @@ CASE_TEST("state_saver_success: dismiss before scope leave") {
 CASE_TEST("state_saver_success: dismiss before error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    saver_succes.dismiss();
+    saver_success.dismiss();
     throw std::runtime_error{"error"};
   };
 
@@ -92,11 +92,11 @@ CASE_TEST("state_saver_success: dismiss before error") {
 CASE_TEST("state_saver_success: not called on error, dismiss after error") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
     throw std::runtime_error{"error"};
-    saver_succes.dismiss();
+    saver_success.dismiss();
   };
 
   REQUIRE_THROWS([&]() {
@@ -110,10 +110,10 @@ CASE_TEST("state_saver_success: not called on error, dismiss after error") {
 CASE_TEST("state_saver_success: restore") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    saver_succes.restore();
+    saver_success.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };
@@ -132,11 +132,11 @@ CASE_TEST("state_saver_success: restore") {
 CASE_TEST("state_saver_success: dismiss, restore") {
   test_class a{test_value};
   const auto some_function = [](test_class& a) {
-    saver_succes<decltype(a)> saver_succes{a};
+    saver_success<decltype(a)> saver_success{a};
     a.i = other_test_value;
     REQUIRE(a.i == other_test_value);
-    saver_succes.dismiss();
-    saver_succes.restore();
+    saver_success.dismiss();
+    saver_success.restore();
     REQUIRE(a.i == test_value);
     a.i = other_test_value;
   };
