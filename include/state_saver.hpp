@@ -5,7 +5,7 @@
 //  ____) | || (_| | ||  __/  ____) | (_| |\ V /  __/ |    | |____|_|   |_|
 // |_____/ \__\__,_|\__\___| |_____/ \__,_| \_/ \___|_|     \_____|
 // https://github.com/Neargye/state_saver
-// version 0.8.0
+// version 0.9.0
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -33,7 +33,7 @@
 #define NEARGYE_STATE_SAVER_HPP
 
 #define STATE_SAVER_VERSION_MAJOR 0
-#define STATE_SAVER_VERSION_MINOR 8
+#define STATE_SAVER_VERSION_MINOR 9
 #define STATE_SAVER_VERSION_PATCH 0
 
 #include <type_traits>
