@@ -9,7 +9,7 @@
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
-// Copyright (c) 2018 - 2020 Daniil Goncharov <neargye@gmail.com>.
+// Copyright (c) 2018 - 2021 Daniil Goncharov <neargye@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -72,8 +72,8 @@ namespace detail {
 
 #if defined(STATE_SAVER_SUPPRESS_THROW_RESTORE) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
 #  define NEARGYE_NOEXCEPT(...) noexcept
-#  define NEARGYE_TRY try {
-#  define NEARGYE_CATCH } catch (...) { STATE_SAVER_CATCH_HANDLER }
+#  define NEARGYE_TRY           try {
+#  define NEARGYE_CATCH         } catch (...) { SCOPE_GUARD_CATCH_HANDLER }
 #else
 #  define NEARGYE_NOEXCEPT(...) noexcept(__VA_ARGS__)
 #  define NEARGYE_TRY
@@ -287,8 +287,8 @@ saver_success(U&) -> saver_success<U>;
 #endif
 
 #if !defined(NEARGYE_STR_CONCAT)
-#  define NEARGYE_STR_CONCAT_IMPL(s1, s2) s1##s2
-#  define NEARGYE_STR_CONCAT(s1, s2) NEARGYE_STR_CONCAT_IMPL(s1, s2)
+#  define NEARGYE_STR_CONCAT_(s1, s2) s1##s2
+#  define NEARGYE_STR_CONCAT(s1, s2)  NEARGYE_STR_CONCAT_(s1, s2)
 #endif
 
 #if !defined(NEARGYE_COUNTER)
@@ -299,26 +299,22 @@ saver_success(U&) -> saver_success<U>;
 #  endif
 #endif
 
-#if __cplusplus >= 201703L || defined(_MSVC_LANG) && _MSVC_LANG >= 201703L
-#  define NEARGYE_STATE_SAVER_WITH(s) if (s; true)
-#else
-#  define NEARGYE_STATE_SAVER_WITH_IMPL(s, i) if (int i = 1) for (s; i; --i)
-#  define NEARGYE_STATE_SAVER_WITH(s) NEARGYE_STATE_SAVER_WITH_IMPL(s, NEARGYE_STR_CONCAT(WITH_INTERNAL_OBJECT_, NEARGYE_COUNTER))
-#endif
+#define NEARGYE_STATE_SAVER_WITH_(s, i) for (int i = 1; i--; g)
+#define NEARGYE_STATE_SAVER_WITH(s)     NEARGYE_STATE_SAVER_WITH_(s, NEARGYE_STR_CONCAT(NEARGYE_INTERNAL_OBJECT_, NEARGYE_COUNTER))
 
 // SAVER_EXIT saves the original variable value and restores on scope exit.
 #define MAKE_SAVER_EXIT(name, x) ::state_saver::saver_exit<decltype(x)> name{x}
-#define SAVER_EXIT(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_EXIT(NEARGYE_STR_CONCAT(SAVER_EXIT_, NEARGYE_COUNTER), x)
-#define WITH_SAVER_EXIT(x) NEARGYE_STATE_SAVER_WITH(SAVER_EXIT(x))
+#define SAVER_EXIT(x)            NEARGYE_MAYBE_UNUSED const MAKE_SAVER_EXIT(NEARGYE_STR_CONCAT(SAVER_EXIT_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_EXIT(x)       NEARGYE_STATE_SAVER_WITH(::state_saver::saver_exit<decltype(x)>{x})
 
 // SAVER_FAIL saves the original variable value and restores on scope exit when an exception has been thrown.
 #define MAKE_SAVER_FAIL(name, x) ::state_saver::saver_fail<decltype(x)> name{x}
-#define SAVER_FAIL(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_FAIL(NEARGYE_STR_CONCAT(SAVER_FAIL_, NEARGYE_COUNTER), x)
-#define WITH_SAVER_FAIL(x) NEARGYE_STATE_SAVER_WITH(SAVER_FAIL(x))
+#define SAVER_FAIL(x)            NEARGYE_MAYBE_UNUSED const MAKE_SAVER_FAIL(NEARGYE_STR_CONCAT(SAVER_FAIL_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_FAIL(x)       NEARGYE_STATE_SAVER_WITH(::state_saver::saver_fail<decltype(x)>{x})
 
 // SAVER_SUCCESS saves the original variable value and restores on scope exit when no exceptions have been thrown.
 #define MAKE_SAVER_SUCCESS(name, x) ::state_saver::saver_success<decltype(x)> name{x}
-#define SAVER_SUCCESS(x) NEARGYE_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(NEARGYE_STR_CONCAT(SAVER_SUCCES_, NEARGYE_COUNTER), x)
-#define WITH_SAVER_SUCCESS(x) NEARGYE_STATE_SAVER_WITH(SAVER_SUCCESS(x))
+#define SAVER_SUCCESS(x)            NEARGYE_MAYBE_UNUSED const MAKE_SAVER_SUCCESS(NEARGYE_STR_CONCAT(SAVER_SUCCES_, NEARGYE_COUNTER), x)
+#define WITH_SAVER_SUCCESS(x)       NEARGYE_STATE_SAVER_WITH(::state_saver::saver_success<decltype(x)>{x})
 
 #endif // NEARGYE_STATE_SAVER_HPP
