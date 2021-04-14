@@ -299,7 +299,7 @@ saver_success(U&) -> saver_success<U>;
 #  endif
 #endif
 
-#define NEARGYE_STATE_SAVER_WITH_(s, i) for (int i = 1; i--; g)
+#define NEARGYE_STATE_SAVER_WITH_(s, i) for (int i = 1; i--; s)
 #define NEARGYE_STATE_SAVER_WITH(s)     NEARGYE_STATE_SAVER_WITH_(s, NEARGYE_STR_CONCAT(NEARGYE_INTERNAL_OBJECT_, NEARGYE_COUNTER))
 
 // SAVER_EXIT saves the original variable value and restores on scope exit.
